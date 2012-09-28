@@ -1,4 +1,4 @@
-package Net::Amazon::S3::Client;
+package AnyEvent::Net::Amazon::S3::Client;
 use Moose 0.85;
 use HTTP::Status qw(is_error status_message);
 use MooseX::StrictConstructor 0.16;
@@ -10,7 +10,7 @@ type 'Etag' => where { $_ =~ /^[a-z0-9]{32}$/ };
 
 type 'OwnerId' => where { $_ =~ /^[a-z0-9]{64}$/ };
 
-has 's3' => ( is => 'ro', isa => 'Net::Amazon::S3', required => 1 );
+has 's3' => ( is => 'ro', isa => 'AnyEvent::Net::Amazon::S3', required => 1 );
 
 __PACKAGE__->meta->make_immutable;
 
@@ -19,7 +19,7 @@ sub buckets {
     my $s3   = $self->s3;
 
     my $http_request
-        = Net::Amazon::S3::Request::ListAllMyBuckets->new( s3 => $s3 )
+        = AnyEvent::Net::Amazon::S3::Request::ListAllMyBuckets->new( s3 => $s3 )
         ->http_request;
 
     my $xpc = $self->_send_request_xpc($http_request);
@@ -34,7 +34,7 @@ sub buckets {
         $xpc->findnodes('/s3:ListAllMyBucketsResult/s3:Buckets/s3:Bucket') )
     {
         push @buckets,
-            Net::Amazon::S3::Client::Bucket->new(
+            AnyEvent::Net::Amazon::S3::Client::Bucket->new(
             {   client => $self,
                 name   => $xpc->findvalue( './s3:Name', $node ),
                 creation_date =>
@@ -51,7 +51,7 @@ sub buckets {
 sub create_bucket {
     my ( $self, %conf ) = @_;
 
-    my $bucket = Net::Amazon::S3::Client::Bucket->new(
+    my $bucket = AnyEvent::Net::Amazon::S3::Client::Bucket->new(
         client => $self,
         name   => $conf{name},
     );
@@ -64,7 +64,7 @@ sub create_bucket {
 
 sub bucket {
     my ( $self, %conf ) = @_;
-    return Net::Amazon::S3::Client::Bucket->new(
+    return AnyEvent::Net::Amazon::S3::Client::Bucket->new(
         client => $self,
         %conf,
     );
@@ -132,22 +132,22 @@ no strict 'vars'
 
 =head1 SYNOPSIS
 
-  my $s3 = Net::Amazon::S3->new(
+  my $s3 = AnyEvent::Net::Amazon::S3->new(
     aws_access_key_id     => $aws_access_key_id,
     aws_secret_access_key => $aws_secret_access_key,
     retry                 => 1,
   );
-  my $client = Net::Amazon::S3::Client->new( s3 => $s3 );
+  my $client = AnyEvent::Net::Amazon::S3::Client->new( s3 => $s3 );
 
   # list all my buckets
-  # returns a list of L<Net::Amazon::S3::Client::Bucket> objects
+  # returns a list of L<AnyEvent::Net::Amazon::S3::Client::Bucket> objects
   my @buckets = $client->buckets;
   foreach my $bucket (@buckets) {
     print $bucket->name . "\n";
   }
 
   # create a new bucket
-  # returns a L<Net::Amazon::S3::Client::Bucket> object
+  # returns a L<AnyEvent::Net::Amazon::S3::Client::Bucket> object
   my $bucket = $client->create_bucket(
     name                => $bucket_name,
     acl_short           => 'private',
@@ -155,16 +155,16 @@ no strict 'vars'
   );
 
   # or use an existing bucket
-  # returns a L<Net::Amazon::S3::Client::Bucket> object
+  # returns a L<AnyEvent::Net::Amazon::S3::Client::Bucket> object
   my $bucket = $client->bucket( name => $bucket_name );
 
 =head1 DESCRIPTION
 
-The L<Net::Amazon::S3> module was written when the Amazon S3 service
+The L<AnyEvent::Net::Amazon::S3> module was written when the Amazon S3 service
 had just come out and it is a light wrapper around the APIs. Some
 bad API decisions were also made. The
-L<Net::Amazon::S3::Client>, L<Net::Amazon::S3::Client::Bucket> and
-L<Net::Amazon::S3::Client::Object> classes are designed after years
+L<AnyEvent::Net::Amazon::S3::Client>, L<AnyEvent::Net::Amazon::S3::Client::Bucket> and
+L<AnyEvent::Net::Amazon::S3::Client::Object> classes are designed after years
 of usage to be easy to use for common tasks.
 
 These classes throw an exception when a fatal error occurs. It
@@ -179,7 +179,7 @@ may change.
 =head2 buckets
 
   # list all my buckets
-  # returns a list of L<Net::Amazon::S3::Client::Bucket> objects
+  # returns a list of L<AnyEvent::Net::Amazon::S3::Client::Bucket> objects
   my @buckets = $client->buckets;
   foreach my $bucket (@buckets) {
     print $bucket->name . "\n";
@@ -188,7 +188,7 @@ may change.
 =head2 create_bucket
 
   # create a new bucket
-  # returns a L<Net::Amazon::S3::Client::Bucket> object
+  # returns a L<AnyEvent::Net::Amazon::S3::Client::Bucket> object
   my $bucket = $client->create_bucket(
     name                => $bucket_name,
     acl_short           => 'private',
@@ -198,6 +198,6 @@ may change.
 =head2 bucket
 
   # or use an existing bucket
-  # returns a L<Net::Amazon::S3::Client::Bucket> object
+  # returns a L<AnyEvent::Net::Amazon::S3::Client::Bucket> object
   my $bucket = $client->bucket( name => $bucket_name );
 

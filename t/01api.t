@@ -11,14 +11,14 @@ unless ( $ENV{'AMAZON_S3_EXPENSIVE_TESTS'} ) {
     plan tests => 71 * 2 + 4;
 }
 
-use_ok('Net::Amazon::S3');
+use_ok('AnyEvent::Net::Amazon::S3');
 
 use vars qw/$OWNER_ID $OWNER_DISPLAYNAME/;
 
 my $aws_access_key_id     = $ENV{'AWS_ACCESS_KEY_ID'};
 my $aws_secret_access_key = $ENV{'AWS_ACCESS_KEY_SECRET'};
 
-my $s3 = Net::Amazon::S3->new(
+my $s3 = AnyEvent::Net::Amazon::S3->new(
     {   aws_access_key_id     => $aws_access_key_id,
         aws_secret_access_key => $aws_secret_access_key,
         retry                 => 1,
@@ -57,7 +57,7 @@ for my $location ( undef, 'EU' ) {
         }
     ) or die $s3->err . ": " . $s3->errstr;
 
-    is( ref $bucket_obj,                      "Net::Amazon::S3::Bucket" );
+    is( ref $bucket_obj,                      "AnyEvent::Net::Amazon::S3::Bucket" );
     is( $bucket_obj->get_location_constraint, $location );
 
     like_acl_allusers_read($bucket_obj);
@@ -65,9 +65,9 @@ for my $location ( undef, 'EU' ) {
     unlike_acl_allusers_read($bucket_obj);
 
     # another way to get a bucket object (does no network I/O,
-    # assumes it already exists).  Read Net::Amazon::S3::Bucket.
+    # assumes it already exists).  Read AnyEvent::Net::Amazon::S3::Bucket.
     $bucket_obj = $s3->bucket($bucketname);
-    is( ref $bucket_obj, "Net::Amazon::S3::Bucket" );
+    is( ref $bucket_obj, "AnyEvent::Net::Amazon::S3::Bucket" );
 
     # fetch contents of the bucket
     # note prefix, marker, max_keys options can be passed in
@@ -309,7 +309,7 @@ for my $location ( undef, 'EU' ) {
     ok( $bucket_obj->delete_bucket() );
 }
 
-# see more docs in Net::Amazon::S3::Bucket
+# see more docs in AnyEvent::Net::Amazon::S3::Bucket
 
 # local test methods
 sub is_request_response_code {

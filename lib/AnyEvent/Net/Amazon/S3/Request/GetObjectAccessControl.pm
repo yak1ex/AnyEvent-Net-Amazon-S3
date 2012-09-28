@@ -1,7 +1,7 @@
-package Net::Amazon::S3::Request::GetObjectAccessControl;
+package AnyEvent::Net::Amazon::S3::Request::GetObjectAccessControl;
 use Moose 0.85;
 use MooseX::StrictConstructor 0.16;
-extends 'Net::Amazon::S3::Request';
+extends 'AnyEvent::Net::Amazon::S3::Request';
 
 # ABSTRACT: An internal class to get an object's access control
 
@@ -13,7 +13,7 @@ __PACKAGE__->meta->make_immutable;
 sub http_request {
     my $self = shift;
 
-    return Net::Amazon::S3::HTTPRequest->new(
+    return AnyEvent::Net::Amazon::S3::HTTPRequest->new(
         s3     => $self->s3,
         method => 'GET',
         path   => $self->_uri($self->key) . '?acl',
@@ -29,7 +29,7 @@ no strict 'vars'
 
 =head1 SYNOPSIS
 
-  my $http_request = Net::Amazon::S3::Request::GetObjectAccessControl->new(
+  my $http_request = AnyEvent::Net::Amazon::S3::Request::GetObjectAccessControl->new(
     s3     => $s3,
     bucket => $bucket,
     key    => $key,

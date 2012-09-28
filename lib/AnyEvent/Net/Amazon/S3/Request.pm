@@ -1,4 +1,4 @@
-package Net::Amazon::S3::Request;
+package AnyEvent::Net::Amazon::S3::Request;
 use Moose 0.85;
 use MooseX::StrictConstructor 0.16;
 use Moose::Util::TypeConstraints;
@@ -40,7 +40,7 @@ subtype 'BucketName' => as 'BucketName3' => where {
     "Bucket name ($_) must not be in an IP address style (e.g., '192.168.5.4')";
 };
 
-has 's3' => ( is => 'ro', isa => 'Net::Amazon::S3', required => 1 );
+has 's3' => ( is => 'ro', isa => 'AnyEvent::Net::Amazon::S3', required => 1 );
 
 __PACKAGE__->meta->make_immutable;
 
@@ -61,5 +61,5 @@ __END__
 
 =head1 DESCRIPTION
 
-This module is a base class for all the Net::Amazon::S3::Request::*
+This module is a base class for all the AnyEvent::Net::Amazon::S3::Request::*
 classes.

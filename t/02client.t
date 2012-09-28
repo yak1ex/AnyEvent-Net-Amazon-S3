@@ -14,12 +14,12 @@ unless ( $ENV{'AMAZON_S3_EXPENSIVE_TESTS'} ) {
     plan tests => 38;
 }
 
-use_ok('Net::Amazon::S3');
+use_ok('AnyEvent::Net::Amazon::S3');
 
 my $aws_access_key_id     = $ENV{'AWS_ACCESS_KEY_ID'};
 my $aws_secret_access_key = $ENV{'AWS_ACCESS_KEY_SECRET'};
 
-my $s3 = Net::Amazon::S3->new(
+my $s3 = AnyEvent::Net::Amazon::S3->new(
     aws_access_key_id     => $aws_access_key_id,
     aws_secret_access_key => $aws_secret_access_key,
     retry                 => 1,
@@ -28,7 +28,7 @@ my $s3 = Net::Amazon::S3->new(
 my $readme_size   = stat('README')->size;
 my $readme_md5hex = file_md5_hex('README');
 
-my $client = Net::Amazon::S3::Client->new( s3 => $s3 );
+my $client = AnyEvent::Net::Amazon::S3::Client->new( s3 => $s3 );
 
 my @buckets = $client->buckets;
 

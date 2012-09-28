@@ -1,6 +1,6 @@
-package Net::Amazon::S3::Request::CreateBucket;
+package AnyEvent::Net::Amazon::S3::Request::CreateBucket;
 use Moose 0.85;
-extends 'Net::Amazon::S3::Request';
+extends 'AnyEvent::Net::Amazon::S3::Request';
 
 # ABSTRACT: An internal class to create a bucket
 
@@ -29,7 +29,7 @@ sub http_request {
             . "</LocationConstraint></CreateBucketConfiguration>";
     }
 
-    return Net::Amazon::S3::HTTPRequest->new(
+    return AnyEvent::Net::Amazon::S3::HTTPRequest->new(
         s3      => $self->s3,
         method  => 'PUT',
         path    => $self->bucket . '/',
@@ -47,7 +47,7 @@ no strict 'vars'
 
 =head1 SYNOPSIS
 
-  my $http_request = Net::Amazon::S3::Request::CreateBucket->new(
+  my $http_request = AnyEvent::Net::Amazon::S3::Request::CreateBucket->new(
     s3                  => $s3,
     bucket              => $bucket,
     acl_short           => $acl_short,

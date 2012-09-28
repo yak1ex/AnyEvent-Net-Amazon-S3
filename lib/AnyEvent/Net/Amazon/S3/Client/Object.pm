@@ -1,4 +1,4 @@
-package Net::Amazon::S3::Client::Object;
+package AnyEvent::Net::Amazon::S3::Client::Object;
 use Moose 0.85;
 use MooseX::StrictConstructor 0.16;
 use DateTime::Format::HTTP;
@@ -16,9 +16,9 @@ enum 'AclShort' =>
     qw(private public-read public-read-write authenticated-read);
 
 has 'client' =>
-    ( is => 'ro', isa => 'Net::Amazon::S3::Client', required => 1 );
+    ( is => 'ro', isa => 'AnyEvent::Net::Amazon::S3::Client', required => 1 );
 has 'bucket' =>
-    ( is => 'ro', isa => 'Net::Amazon::S3::Client::Bucket', required => 1 );
+    ( is => 'ro', isa => 'AnyEvent::Net::Amazon::S3::Client::Bucket', required => 1 );
 has 'key'  => ( is => 'ro', isa => 'Str',  required => 1 );
 has 'etag' => ( is => 'ro', isa => 'Etag', required => 0 );
 has 'size' => ( is => 'ro', isa => 'Int',  required => 0 );
@@ -49,7 +49,7 @@ __PACKAGE__->meta->make_immutable;
 sub exists {
     my $self = shift;
 
-    my $http_request = Net::Amazon::S3::Request::GetObject->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::GetObject->new(
         s3     => $self->client->s3,
         bucket => $self->bucket->name,
         key    => $self->key,
@@ -63,7 +63,7 @@ sub exists {
 sub get {
     my $self = shift;
 
-    my $http_request = Net::Amazon::S3::Request::GetObject->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::GetObject->new(
         s3     => $self->client->s3,
         bucket => $self->bucket->name,
         key    => $self->key,
@@ -87,7 +87,7 @@ sub get {
 sub get_filename {
     my ( $self, $filename ) = @_;
 
-    my $http_request = Net::Amazon::S3::Request::GetObject->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::GetObject->new(
         s3     => $self->client->s3,
         bucket => $self->bucket->name,
         key    => $self->key,
@@ -131,7 +131,7 @@ sub put {
         $conf->{'Content-Disposition'} = $self->content_disposition;
     }
 
-    my $http_request = Net::Amazon::S3::Request::PutObject->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::PutObject->new(
         s3        => $self->client->s3,
         bucket    => $self->bucket->name,
         key       => $self->key,
@@ -181,7 +181,7 @@ sub put_filename {
     }
 
 
-    my $http_request = Net::Amazon::S3::Request::PutObject->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::PutObject->new(
         s3        => $self->client->s3,
         bucket    => $self->bucket->name,
         key       => $self->key,
@@ -201,7 +201,7 @@ sub put_filename {
 sub delete {
     my $self = shift;
 
-    my $http_request = Net::Amazon::S3::Request::DeleteObject->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::DeleteObject->new(
         s3     => $self->client->s3,
         bucket => $self->bucket->name,
         key    => $self->key,
@@ -212,7 +212,7 @@ sub delete {
 
 sub uri {
     my $self = shift;
-    return Net::Amazon::S3::Request::GetObject->new(
+    return AnyEvent::Net::Amazon::S3::Request::GetObject->new(
         s3     => $self->client->s3,
         bucket => $self->bucket->name,
         key    => $self->key,
@@ -222,7 +222,7 @@ sub uri {
 
 sub query_string_authentication_uri {
     my $self = shift;
-    return Net::Amazon::S3::Request::GetObject->new(
+    return AnyEvent::Net::Amazon::S3::Request::GetObject->new(
         s3     => $self->client->s3,
         bucket => $self->bucket->name,
         key    => $self->key,

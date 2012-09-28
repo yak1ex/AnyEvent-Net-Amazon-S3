@@ -1,8 +1,8 @@
-package Net::Amazon::S3::Request::ListBucket;
+package AnyEvent::Net::Amazon::S3::Request::ListBucket;
 use Moose 0.85;
 use MooseX::StrictConstructor 0.16;
 use URI::Escape qw(uri_escape_utf8);
-extends 'Net::Amazon::S3::Request';
+extends 'AnyEvent::Net::Amazon::S3::Request';
 
 # ABSTRACT: An internal class to list a bucket
 
@@ -32,7 +32,7 @@ sub http_request {
         $path .= '?' . join( '&', @post );
     }
 
-    return Net::Amazon::S3::HTTPRequest->new(
+    return AnyEvent::Net::Amazon::S3::HTTPRequest->new(
         s3     => $self->s3,
         method => 'GET',
         path   => $path,
@@ -53,7 +53,7 @@ no strict 'vars'
 
 =head1 SYNOPSIS
 
-  my $http_request = Net::Amazon::S3::Request::ListBucket->new(
+  my $http_request = AnyEvent::Net::Amazon::S3::Request::ListBucket->new(
     s3        => $s3,
     bucket    => $bucket,
     delimiter => $delimiter,

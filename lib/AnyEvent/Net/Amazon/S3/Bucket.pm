@@ -1,11 +1,11 @@
-package Net::Amazon::S3::Bucket;
+package AnyEvent::Net::Amazon::S3::Bucket;
 use Moose 0.85;
 use MooseX::StrictConstructor 0.16;
 use Carp;
 use File::stat;
 use IO::File 1.14;
 
-has 'account' => ( is => 'ro', isa => 'Net::Amazon::S3', required => 1 );
+has 'account' => ( is => 'ro', isa => 'AnyEvent::Net::Amazon::S3', required => 1 );
 has 'bucket'  => ( is => 'ro', isa => 'Str',             required => 1 );
 has 'creation_date' => ( is => 'ro', isa => 'Maybe[Str]', required => 0 );
 
@@ -18,7 +18,7 @@ no strict 'vars'
 
 =head1 SYNOPSIS
 
-  use Net::Amazon::S3;
+  use AnyEvent::Net::Amazon::S3;
 
   my $bucket = $s3->bucket("foo");
 
@@ -28,7 +28,7 @@ no strict 'vars'
     'x-amz-meta-colour' => 'orange',
   }));
 
-  # the err and errstr methods just proxy up to the Net::Amazon::S3's
+  # the err and errstr methods just proxy up to the AnyEvent::Net::Amazon::S3's
   # objects err/errstr methods.
   $bucket->add_key("bar", "baz") or
       die $bucket->err . $bucket->errstr;
@@ -61,7 +61,7 @@ no strict 'vars'
 =head1 DESCRIPTION
 
 This module represents an S3 bucket.  You get a bucket object
-from the Net::Amazon::S3 object.
+from the AnyEvent::Net::Amazon::S3 object.
 
 =head1 METHODS
 
@@ -137,7 +137,7 @@ sub add_key {
         delete $conf->{acl_short};
     }
 
-    my $http_request = Net::Amazon::S3::Request::PutObject->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::PutObject->new(
         s3        => $self->account,
         bucket    => $self->bucket,
         key       => $key,
@@ -224,7 +224,7 @@ sub copy_key {
     $conf->{'x-amz-copy-source'} = $source;
 
     my $acct    = $self->account;
-    my $http_request = Net::Amazon::S3::Request::PutObject->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::PutObject->new(
         s3        => $self->account,
         bucket    => $self->bucket,
         key       => $key,
@@ -301,7 +301,7 @@ sub get_key {
     $filename = $$filename if ref $filename;
     my $acct = $self->account;
 
-    my $http_request = Net::Amazon::S3::Request::GetObject->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::GetObject->new(
         s3     => $acct,
         bucket => $self->bucket,
         key    => $key,
@@ -369,7 +369,7 @@ sub delete_key {
     my ( $self, $key ) = @_;
     croak 'must specify key' unless defined $key && length $key;
 
-    my $http_request = Net::Amazon::S3::Request::DeleteObject->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::DeleteObject->new(
         s3     => $self->account,
         bucket => $self->bucket,
         key    => $key,
@@ -398,7 +398,7 @@ sub delete_bucket {
 
 List all keys in this bucket.
 
-see L<Net::Amazon::S3/list_bucket> for documentation of this method.
+see L<AnyEvent::Net::Amazon::S3/list_bucket> for documentation of this method.
 
 =cut
 
@@ -414,7 +414,7 @@ sub list {
 List all keys in this bucket without having to worry about
 'marker'. This may make multiple requests to S3 under the hood.
 
-see L<Net::Amazon::S3/list_bucket_all> for documentation of this method.
+see L<AnyEvent::Net::Amazon::S3/list_bucket_all> for documentation of this method.
 
 =cut
 
@@ -447,13 +447,13 @@ sub get_acl {
 
     my $http_request;
     if ($key) {
-        $http_request = Net::Amazon::S3::Request::GetObjectAccessControl->new(
+        $http_request = AnyEvent::Net::Amazon::S3::Request::GetObjectAccessControl->new(
             s3     => $account,
             bucket => $self->bucket,
             key    => $key,
         )->http_request;
     } else {
-        $http_request = Net::Amazon::S3::Request::GetBucketAccessControl->new(
+        $http_request = AnyEvent::Net::Amazon::S3::Request::GetBucketAccessControl->new(
             s3     => $account,
             bucket => $self->bucket,
         )->http_request;
@@ -520,7 +520,7 @@ sub set_acl {
     my $key = $conf->{key};
     my $http_request;
     if ($key) {
-        $http_request = Net::Amazon::S3::Request::SetObjectAccessControl->new(
+        $http_request = AnyEvent::Net::Amazon::S3::Request::SetObjectAccessControl->new(
             s3        => $self->account,
             bucket    => $self->bucket,
             key       => $key,
@@ -528,7 +528,7 @@ sub set_acl {
             acl_xml   => $conf->{acl_xml},
         )->http_request;
     } else {
-        $http_request = Net::Amazon::S3::Request::SetBucketAccessControl->new(
+        $http_request = AnyEvent::Net::Amazon::S3::Request::SetBucketAccessControl->new(
             s3     => $self->account,
             bucket => $self->bucket,
 
@@ -551,7 +551,7 @@ string (eg, 'EU'), or undef if no location constraint was set.
 sub get_location_constraint {
     my ($self) = @_;
 
-    my $http_request = Net::Amazon::S3::Request::GetBucketLocationConstraint->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::GetBucketLocationConstraint->new(
         s3     => $self->account,
         bucket => $self->bucket,
     )->http_request;
@@ -632,5 +632,5 @@ __END__
 
 =head1 SEE ALSO
 
-L<Net::Amazon::S3>
+L<AnyEvent::Net::Amazon::S3>
 

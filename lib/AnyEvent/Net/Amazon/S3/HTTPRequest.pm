@@ -1,4 +1,4 @@
-package Net::Amazon::S3::HTTPRequest;
+package AnyEvent::Net::Amazon::S3::HTTPRequest;
 use Moose 0.85;
 use MooseX::StrictConstructor 0.16;
 use HTTP::Date;
@@ -14,7 +14,7 @@ my $AMAZON_HEADER_PREFIX = 'x-amz-';
 
 enum 'HTTPMethod' => qw(DELETE GET HEAD PUT);
 
-has 's3'     => ( is => 'ro', isa => 'Net::Amazon::S3', required => 1 );
+has 's3'     => ( is => 'ro', isa => 'AnyEvent::Net::Amazon::S3', required => 1 );
 has 'method' => ( is => 'ro', isa => 'HTTPMethod',      required => 1 );
 has 'path'   => ( is => 'ro', isa => 'Str',             required => 1 );
 has 'headers' =>
@@ -226,7 +226,7 @@ no strict 'vars'
 
 =head1 SYNOPSIS
 
-  my $http_request = Net::Amazon::S3::HTTPRequest->new(
+  my $http_request = AnyEvent::Net::Amazon::S3::HTTPRequest->new(
     s3      => $self->s3,
     method  => 'PUT',
     path    => $self->bucket . '/',

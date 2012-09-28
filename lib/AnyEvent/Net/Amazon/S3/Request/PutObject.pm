@@ -1,7 +1,7 @@
-package Net::Amazon::S3::Request::PutObject;
+package AnyEvent::Net::Amazon::S3::Request::PutObject;
 use Moose 0.85;
 use MooseX::StrictConstructor 0.16;
-extends 'Net::Amazon::S3::Request';
+extends 'AnyEvent::Net::Amazon::S3::Request';
 
 # ABSTRACT: An internal class to put an object
 
@@ -22,7 +22,7 @@ sub http_request {
         $headers->{'x-amz-acl'} = $self->acl_short;
     }
 
-    return Net::Amazon::S3::HTTPRequest->new(
+    return AnyEvent::Net::Amazon::S3::HTTPRequest->new(
         s3      => $self->s3,
         method  => 'PUT',
         path    => $self->_uri( $self->key ),
@@ -40,7 +40,7 @@ no strict 'vars'
 
 =head1 SYNOPSIS
 
-  my $http_request = Net::Amazon::S3::Request::PutObject->new(
+  my $http_request = AnyEvent::Net::Amazon::S3::Request::PutObject->new(
     s3        => $s3,
     bucket    => $bucket,
     key       => $key,

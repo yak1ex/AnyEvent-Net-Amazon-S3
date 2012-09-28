@@ -1,4 +1,4 @@
-package Net::Amazon::S3::Client::Bucket;
+package AnyEvent::Net::Amazon::S3::Client::Bucket;
 use Moose 0.85;
 use MooseX::StrictConstructor 0.16;
 use Data::Stream::Bulk::Callback;
@@ -7,7 +7,7 @@ use MooseX::Types::DateTime::MoreCoercions 0.07 qw( DateTime );
 # ABSTRACT: An easy-to-use Amazon S3 client bucket
 
 has 'client' =>
-    ( is => 'ro', isa => 'Net::Amazon::S3::Client', required => 1 );
+    ( is => 'ro', isa => 'AnyEvent::Net::Amazon::S3::Client', required => 1 );
 has 'name' => ( is => 'ro', isa => 'Str', required => 1 );
 has 'creation_date' =>
     ( is => 'ro', isa => DateTime, coerce => 1, required => 0 );
@@ -19,7 +19,7 @@ __PACKAGE__->meta->make_immutable;
 sub _create {
     my ( $self, %conf ) = @_;
 
-    my $http_request = Net::Amazon::S3::Request::CreateBucket->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::CreateBucket->new(
         s3                  => $self->client->s3,
         bucket              => $self->name,
         acl_short           => $conf{acl_short},
@@ -31,7 +31,7 @@ sub _create {
 
 sub delete {
     my $self         = shift;
-    my $http_request = Net::Amazon::S3::Request::DeleteBucket->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::DeleteBucket->new(
         s3     => $self->client->s3,
         bucket => $self->name,
     )->http_request;
@@ -42,7 +42,7 @@ sub delete {
 sub acl {
     my $self = shift;
 
-    my $http_request = Net::Amazon::S3::Request::GetBucketAccessControl->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::GetBucketAccessControl->new(
         s3     => $self->client->s3,
         bucket => $self->name,
     )->http_request;
@@ -54,7 +54,7 @@ sub location_constraint {
     my $self = shift;
 
     my $http_request
-        = Net::Amazon::S3::Request::GetBucketLocationConstraint->new(
+        = AnyEvent::Net::Amazon::S3::Request::GetBucketLocationConstraint->new(
         s3     => $self->client->s3,
         bucket => $self->name,
         )->http_request;
@@ -81,7 +81,7 @@ sub list {
 
             return undef if $end;
 
-            my $http_request = Net::Amazon::S3::Request::ListBucket->new(
+            my $http_request = AnyEvent::Net::Amazon::S3::Request::ListBucket->new(
                 s3     => $self->client->s3,
                 bucket => $self->name,
                 marker => $marker,
@@ -104,7 +104,7 @@ sub list {
  #                $xpc->findvalue( ".//s3:DisplayName", $node ),
 
                 push @objects,
-                    Net::Amazon::S3::Client::Object->new(
+                    AnyEvent::Net::Amazon::S3::Client::Object->new(
                     client => $self->client,
                     bucket => $self,
                     key    => $xpc->findvalue( './s3:Key', $node ),
@@ -134,7 +134,7 @@ sub list {
 
 sub object {
     my ( $self, %conf ) = @_;
-    return Net::Amazon::S3::Client::Object->new(
+    return AnyEvent::Net::Amazon::S3::Client::Object->new(
         client => $self->client,
         bucket => $self,
         %conf,
@@ -161,7 +161,7 @@ no strict 'vars'
 
   # list objects in the bucket
   # this returns a L<Data::Stream::Bulk> object which returns a
-  # stream of L<Net::Amazon::S3::Client::Object> objects, as it may
+  # stream of L<AnyEvent::Net::Amazon::S3::Client::Object> objects, as it may
   # have to issue multiple API requests
   my $stream = $bucket->list;
   until ( $stream->is_done ) {
@@ -173,7 +173,7 @@ no strict 'vars'
   # or list by a prefix
   my $prefix_stream = $bucket->list( { prefix => 'logs/' } );
 
-  # returns a L<Net::Amazon::S3::Client::Object>, which can then
+  # returns a L<AnyEvent::Net::Amazon::S3::Client::Object>, which can then
   # be used to get or put
   my $object = $bucket->object( key => 'this is the key' );
 
@@ -200,7 +200,7 @@ This module represents buckets.
 
   # list objects in the bucket
   # this returns a L<Data::Stream::Bulk> object which returns a
-  # stream of L<Net::Amazon::S3::Client::Object> objects, as it may
+  # stream of L<AnyEvent::Net::Amazon::S3::Client::Object> objects, as it may
   # have to issue multiple API requests
   my $stream = $bucket->list;
   until ( $stream->is_done ) {
@@ -224,7 +224,7 @@ This module represents buckets.
 
 =head2 object
 
-  # returns a L<Net::Amazon::S3::Client::Object>, which can then
+  # returns a L<AnyEvent::Net::Amazon::S3::Client::Object>, which can then
   # be used to get or put
   my $object = $bucket->object( key => 'this is the key' );
 

@@ -1,4 +1,4 @@
-package Net::Amazon::S3;
+package AnyEvent::Net::Amazon::S3;
 use Moose 0.85;
 use MooseX::StrictConstructor 0.16;
 
@@ -6,11 +6,11 @@ use MooseX::StrictConstructor 0.16;
 
 =head1 SYNOPSIS
 
-  use Net::Amazon::S3;
+  use AnyEvent::Net::Amazon::S3;
   my $aws_access_key_id     = 'fill me in';
   my $aws_secret_access_key = 'fill me in too';
 
-  my $s3 = Net::Amazon::S3->new(
+  my $s3 = AnyEvent::Net::Amazon::S3->new(
       {   aws_access_key_id     => $aws_access_key_id,
           aws_secret_access_key => $aws_secret_access_key,
           retry                 => 1,
@@ -95,7 +95,7 @@ stored in values. Values are referenced by keys, and keys are stored
 in buckets. Bucket names are global.
 
 Note: This is the legacy interface, please check out
-L<Net::Amazon::S3::Client> instead.
+L<AnyEvent::Net::Amazon::S3::Client> instead.
 
 Development of this code happens here: http://github.com/pfig/net-amazon-s3/
 
@@ -106,24 +106,24 @@ Homepage for the project (just started) is at http://pfig.github.com/net-amazon-
 use Carp;
 use Digest::HMAC_SHA1;
 
-use Net::Amazon::S3::Bucket;
-use Net::Amazon::S3::Client;
-use Net::Amazon::S3::Client::Bucket;
-use Net::Amazon::S3::Client::Object;
-use Net::Amazon::S3::HTTPRequest;
-use Net::Amazon::S3::Request;
-use Net::Amazon::S3::Request::CreateBucket;
-use Net::Amazon::S3::Request::DeleteBucket;
-use Net::Amazon::S3::Request::DeleteObject;
-use Net::Amazon::S3::Request::GetBucketAccessControl;
-use Net::Amazon::S3::Request::GetBucketLocationConstraint;
-use Net::Amazon::S3::Request::GetObject;
-use Net::Amazon::S3::Request::GetObjectAccessControl;
-use Net::Amazon::S3::Request::ListAllMyBuckets;
-use Net::Amazon::S3::Request::ListBucket;
-use Net::Amazon::S3::Request::PutObject;
-use Net::Amazon::S3::Request::SetBucketAccessControl;
-use Net::Amazon::S3::Request::SetObjectAccessControl;
+use AnyEvent::Net::Amazon::S3::Bucket;
+use AnyEvent::Net::Amazon::S3::Client;
+use AnyEvent::Net::Amazon::S3::Client::Bucket;
+use AnyEvent::Net::Amazon::S3::Client::Object;
+use AnyEvent::Net::Amazon::S3::HTTPRequest;
+use AnyEvent::Net::Amazon::S3::Request;
+use AnyEvent::Net::Amazon::S3::Request::CreateBucket;
+use AnyEvent::Net::Amazon::S3::Request::DeleteBucket;
+use AnyEvent::Net::Amazon::S3::Request::DeleteObject;
+use AnyEvent::Net::Amazon::S3::Request::GetBucketAccessControl;
+use AnyEvent::Net::Amazon::S3::Request::GetBucketLocationConstraint;
+use AnyEvent::Net::Amazon::S3::Request::GetObject;
+use AnyEvent::Net::Amazon::S3::Request::GetObjectAccessControl;
+use AnyEvent::Net::Amazon::S3::Request::ListAllMyBuckets;
+use AnyEvent::Net::Amazon::S3::Request::ListBucket;
+use AnyEvent::Net::Amazon::S3::Request::PutObject;
+use AnyEvent::Net::Amazon::S3::Request::SetBucketAccessControl;
+use AnyEvent::Net::Amazon::S3::Request::SetObjectAccessControl;
 use LWP::UserAgent::Determined;
 use URI::Escape qw(uri_escape_utf8);
 use XML::LibXML;
@@ -223,7 +223,7 @@ sub buckets {
     my $self = shift;
 
     my $http_request
-        = Net::Amazon::S3::Request::ListAllMyBuckets->new( s3 => $self )
+        = AnyEvent::Net::Amazon::S3::Request::ListAllMyBuckets->new( s3 => $self )
         ->http_request;
 
     # die $request->http_request->as_string;
@@ -238,7 +238,7 @@ sub buckets {
     my @buckets;
     foreach my $node ( $xpc->findnodes(".//s3:Bucket") ) {
         push @buckets,
-            Net::Amazon::S3::Bucket->new(
+            AnyEvent::Net::Amazon::S3::Bucket->new(
             {   bucket => $xpc->findvalue( ".//s3:Name", $node ),
                 creation_date =>
                     $xpc->findvalue( ".//s3:CreationDate", $node ),
@@ -276,14 +276,14 @@ to 'EU' for a European data center - note that costs are different.
 
 =back
 
-Returns 0 on failure, Net::Amazon::S3::Bucket object on success
+Returns 0 on failure, AnyEvent::Net::Amazon::S3::Bucket object on success
 
 =cut
 
 sub add_bucket {
     my ( $self, $conf ) = @_;
 
-    my $http_request = Net::Amazon::S3::Request::CreateBucket->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::CreateBucket->new(
         s3                  => $self,
         bucket              => $conf->{bucket},
         acl_short           => $conf->{acl_short},
@@ -306,13 +306,13 @@ Returns an (unverified) bucket object from an account. Does no network access.
 
 sub bucket {
     my ( $self, $bucketname ) = @_;
-    return Net::Amazon::S3::Bucket->new(
+    return AnyEvent::Net::Amazon::S3::Bucket->new(
         { bucket => $bucketname, account => $self } );
 }
 
 =head2 delete_bucket
 
-Takes either a L<Net::Amazon::S3::Bucket> object or a hashref containing
+Takes either a L<AnyEvent::Net::Amazon::S3::Bucket> object or a hashref containing
 
 =over
 
@@ -338,7 +338,7 @@ sub delete_bucket {
     }
     croak 'must specify bucket' unless $bucket;
 
-    my $http_request = Net::Amazon::S3::Request::DeleteBucket->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::DeleteBucket->new(
         s3     => $self,
         bucket => $bucket,
     )->http_request;
@@ -485,7 +485,7 @@ Each key is a hashref that looks like this:
 sub list_bucket {
     my ( $self, $conf ) = @_;
 
-    my $http_request = Net::Amazon::S3::Request::ListBucket->new(
+    my $http_request = AnyEvent::Net::Amazon::S3::Request::ListBucket->new(
         s3        => $self,
         bucket    => $conf->{bucket},
         delimiter => $conf->{delimiter},
@@ -587,7 +587,7 @@ sub list_bucket_all {
 
 sub _compat_bucket {
     my ( $self, $conf ) = @_;
-    return Net::Amazon::S3::Bucket->new(
+    return AnyEvent::Net::Amazon::S3::Bucket->new(
         { account => $self, bucket => delete $conf->{bucket} } );
 }
 
@@ -707,7 +707,7 @@ sub _send_request_expect_nothing {
 sub _send_request_expect_nothing_probed {
     my ( $self, $http_request ) = @_;
 
-    my $head = Net::Amazon::S3::HTTPRequest->new(
+    my $head = AnyEvent::Net::Amazon::S3::HTTPRequest->new(
         s3     => $self,
         method => 'HEAD',
         path   => $http_request->uri->path,
@@ -742,7 +742,7 @@ sub _croak_if_response_error {
     unless ( $response->code =~ /^2\d\d$/ ) {
         $self->err("network_error");
         $self->errstr( $response->status_line );
-        croak "Net::Amazon::S3: Amazon responded with "
+        croak "AnyEvent::Net::Amazon::S3: Amazon responded with "
             . $response->status_line . "\n";
     }
 }
@@ -837,5 +837,5 @@ Pedro Figueiredo <me@pedrofigueiredo.org> - since 0.54
 
 =head1 SEE ALSO
 
-L<Net::Amazon::S3::Bucket>
+L<AnyEvent::Net::Amazon::S3::Bucket>
 
