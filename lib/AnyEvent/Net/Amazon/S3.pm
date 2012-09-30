@@ -124,7 +124,8 @@ use AnyEvent::Net::Amazon::S3::Request::ListBucket;
 use AnyEvent::Net::Amazon::S3::Request::PutObject;
 use AnyEvent::Net::Amazon::S3::Request::SetBucketAccessControl;
 use AnyEvent::Net::Amazon::S3::Request::SetObjectAccessControl;
-use LWP::UserAgent::Determined;
+use AnyEvent::HTTP::LWP::UserAgent;
+use AnyEvent::HTTP::LWP::UserAgent::Determined;
 use URI::Escape qw(uri_escape_utf8);
 use XML::LibXML;
 use XML::LibXML::XPathContext;
@@ -136,7 +137,7 @@ has 'timeout' => ( is => 'ro', isa => 'Num',  required => 0, default => 30 );
 has 'retry'   => ( is => 'ro', isa => 'Bool', required => 0, default => 0 );
 
 has 'libxml' => ( is => 'rw', isa => 'XML::LibXML',    required => 0 );
-has 'ua'     => ( is => 'rw', isa => 'LWP::UserAgent', required => 0 );
+has 'ua'     => ( is => 'rw', isa => 'AnyEvent::HTTP::LWP::UserAgent', required => 0 );
 has 'err'    => ( is => 'rw', isa => 'Maybe[Str]',     required => 0 );
 has 'errstr' => ( is => 'rw', isa => 'Maybe[Str]',     required => 0 );
 
@@ -194,13 +195,13 @@ sub BUILD {
 
     my $ua;
     if ( $self->retry ) {
-        $ua = LWP::UserAgent::Determined->new(
+        $ua = AnyEvent::HTTP::LWP::UserAgent::Determined->new(
             keep_alive            => $KEEP_ALIVE_CACHESIZE,
             requests_redirectable => [qw(GET HEAD DELETE PUT)],
         );
         $ua->timing('1,2,4,8,16,32');
     } else {
-        $ua = LWP::UserAgent->new(
+        $ua = AnyEvent::HTTP::LWP::UserAgent->new(
             keep_alive            => $KEEP_ALIVE_CACHESIZE,
             requests_redirectable => [qw(GET HEAD DELETE PUT)],
         );
