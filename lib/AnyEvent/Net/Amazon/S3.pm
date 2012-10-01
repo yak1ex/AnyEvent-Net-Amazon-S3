@@ -106,6 +106,7 @@ Homepage for the project (just started) is at http://pfig.github.com/net-amazon-
 use Carp;
 use Digest::HMAC_SHA1;
 
+use Net::Amazon::S3;
 use AnyEvent::Net::Amazon::S3::Bucket;
 use AnyEvent::Net::Amazon::S3::Client;
 use AnyEvent::Net::Amazon::S3::Client::Bucket;
@@ -130,16 +131,9 @@ use URI::Escape qw(uri_escape_utf8);
 use XML::LibXML;
 use XML::LibXML::XPathContext;
 
-has 'aws_access_key_id'     => ( is => 'ro', isa => 'Str', required => 1 );
-has 'aws_secret_access_key' => ( is => 'ro', isa => 'Str', required => 1 );
-has 'secure' => ( is => 'ro', isa => 'Bool', required => 0, default => 0 );
-has 'timeout' => ( is => 'ro', isa => 'Num',  required => 0, default => 30 );
-has 'retry'   => ( is => 'ro', isa => 'Bool', required => 0, default => 0 );
+extends 'Net::Amazon::S3';
 
-has 'libxml' => ( is => 'rw', isa => 'XML::LibXML',    required => 0 );
-has 'ua'     => ( is => 'rw', isa => 'AnyEvent::HTTP::LWP::UserAgent', required => 0 );
-has 'err'    => ( is => 'rw', isa => 'Maybe[Str]',     required => 0 );
-has 'errstr' => ( is => 'rw', isa => 'Maybe[Str]',     required => 0 );
+#has 'ua'     => ( is => 'rw', isa => 'AnyEvent::HTTP::LWP::UserAgent', required => 0 );
 
 __PACKAGE__->meta->make_immutable;
 
@@ -211,7 +205,7 @@ sub BUILD {
     $ua->env_proxy;
 
     $self->ua($ua);
-    $self->libxml( XML::LibXML->new );
+#    $self->libxml( XML::LibXML->new ); # Set in superclass
 }
 
 =head2 buckets
@@ -586,12 +580,6 @@ sub list_bucket_all {
     return $all;
 }
 
-sub _compat_bucket {
-    my ( $self, $conf ) = @_;
-    return AnyEvent::Net::Amazon::S3::Bucket->new(
-        { account => $self, bucket => delete $conf->{bucket} } );
-}
-
 =head2 add_key
 
 DEPRECATED. DO NOT USE
@@ -646,33 +634,33 @@ sub delete_key {
     return $bucket->delete_key( $conf->{key} );
 }
 
-sub _validate_acl_short {
-    my ( $self, $policy_name ) = @_;
+# $self->_send_request_async($HTTP::Request)
+# $self->_send_request_async(@params_to_make_request)
+sub _send_request_async {
+    my ( $self, $http_request ) = @_;
 
-    if (!grep( { $policy_name eq $_ }
-            qw(private public-read public-read-write authenticated-read) ) )
-    {
-        croak "$policy_name is not a supported canned access policy";
-    }
+    # warn $http_request->as_string;
+
+    my $cv = AE::cv;
+    $self->_do_http_async($http_request)->cb(sub { $cv->send(sub {
+        my $response = shift->recv;
+        my $content  = $response->content;
+
+        return $content unless $response->content_type eq 'application/xml';
+        return unless $content;
+        return $self->_xpc_of_content($content);
+    }->(shift))});
+    return $cv;
 }
 
 # $self->_send_request($HTTP::Request)
 # $self->_send_request(@params_to_make_request)
 sub _send_request {
-    my ( $self, $http_request ) = @_;
-
-    # warn $http_request->as_string;
-
-    my $response = $self->_do_http($http_request);
-    my $content  = $response->content;
-
-    return $content unless $response->content_type eq 'application/xml';
-    return unless $content;
-    return $self->_xpc_of_content($content);
+    return shift->_send_request_async(@_)->recv;
 }
 
 # centralize all HTTP work, for debugging
-sub _do_http {
+sub _do_http_async {
     my ( $self, $http_request, $filename ) = @_;
 
     confess 'Need HTTP::Request object'
@@ -681,21 +669,33 @@ sub _do_http {
     # convenient time to reset any error conditions
     $self->err(undef);
     $self->errstr(undef);
-    return $self->ua->request( $http_request, $filename );
+    return $self->ua->request_async( $http_request, $filename );
 }
 
-sub _send_request_expect_nothing {
+sub _do_http {
+    return shift->_do_http_async(@_)->recv;
+}
+
+sub _send_request_expect_nothing_async {
     my ( $self, $http_request ) = @_;
 
     # warn $http_request->as_string;
+    my $cv = AE::cv;
+    $self->_do_http_async($http_request)->cb(sub { $cv->send(sub {
 
-    my $response = $self->_do_http($http_request);
+    my $response = shift->recv;
 
     return 1 if $response->code =~ /^2\d\d$/;
 
     # anything else is a failure, and we save the parsed result
     $self->_remember_errors( $response->content );
     return 0;
+
+    }->(shift))});
+    return $cv;
+}
+sub _send_reuest_expect_nothing {
+    return shift->_send_request_expect_nothing_async(@_)->recv;
 }
 
 # Send a HEAD request first, to find out if we'll be hit with a 307 redirect.
@@ -705,7 +705,7 @@ sub _send_request_expect_nothing {
 # having followed the redirect, the filehandle's already been closed from the
 # first time we used it. Thus, we need to probe first to find out what's going on,
 # before we start sending any actual data.
-sub _send_request_expect_nothing_probed {
+sub _send_request_expect_nothing_probed_async {
     my ( $self, $http_request ) = @_;
 
     my $head = AnyEvent::Net::Amazon::S3::HTTPRequest->new(
@@ -720,7 +720,9 @@ sub _send_request_expect_nothing_probed {
     my $old_redirectable = $self->ua->requests_redirectable;
     $self->ua->requests_redirectable( [] );
 
-    my $response = $self->_do_http($head);
+    my $cv = AE::cv;
+    $self->_do_http_async($head)->cb(sub {
+    my $response = shift->recv;
 
     if ( $response->code =~ /^3/ && defined $response->header('Location') ) {
         $override_uri = $response->header('Location');
@@ -728,7 +730,8 @@ sub _send_request_expect_nothing_probed {
 
     $http_request->uri($override_uri) if defined $override_uri;
 
-    $response = $self->_do_http($http_request);
+    $self->_do_http_async($http_request)->cb(sub { $cv->send(sub {
+    $response = shift->recv;
     $self->ua->requests_redirectable($old_redirectable);
 
     return 1 if $response->code =~ /^2\d\d$/;
@@ -736,54 +739,14 @@ sub _send_request_expect_nothing_probed {
     # anything else is a failure, and we save the parsed result
     $self->_remember_errors( $response->content );
     return 0;
+
+    }->(shift))});
+
+    });
+    return $cv;
 }
-
-sub _croak_if_response_error {
-    my ( $self, $response ) = @_;
-    unless ( $response->code =~ /^2\d\d$/ ) {
-        $self->err("network_error");
-        $self->errstr( $response->status_line );
-        croak "AnyEvent::Net::Amazon::S3: Amazon responded with "
-            . $response->status_line . "\n";
-    }
-}
-
-sub _xpc_of_content {
-    my ( $self, $content ) = @_;
-    my $doc = $self->libxml->parse_string($content);
-
-    # warn $doc->toString(1);
-
-    my $xpc = XML::LibXML::XPathContext->new($doc);
-    $xpc->registerNs( 's3', 'http://s3.amazonaws.com/doc/2006-03-01/' );
-
-    return $xpc;
-}
-
-# returns 1 if errors were found
-sub _remember_errors {
-    my ( $self, $src ) = @_;
-
-    # Do not try to parse non-xml
-    unless ( ref $src || $src =~ m/^[[:space:]]*</ ) {
-        ( my $code = $src ) =~ s/^[[:space:]]*\([0-9]*\).*$/$1/;
-        $self->err($code);
-        $self->errstr($src);
-        return 1;
-    }
-
-    my $xpc = ref $src ? $src : $self->_xpc_of_content($src);
-    if ( $xpc->findnodes("//Error") ) {
-        $self->err( $xpc->findvalue("//Error/Code") );
-        $self->errstr( $xpc->findvalue("//Error/Message") );
-        return 1;
-    }
-    return 0;
-}
-
-sub _urlencode {
-    my ( $self, $unencoded ) = @_;
-    return uri_escape_utf8( $unencoded, '^A-Za-z0-9_\-\.' );
+sub _send_request_expect_nothing_probed {
+    return shift->_send_request_expect_nothing_probed_async(@_)->recv;
 }
 
 1;

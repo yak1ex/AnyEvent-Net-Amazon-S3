@@ -4,10 +4,10 @@ use MooseX::StrictConstructor 0.16;
 use Carp;
 use File::stat;
 use IO::File 1.14;
+use Net::Amazon::S3::Bucket;
 
+extends 'Net::Amazon::S3::Bucket';
 has 'account' => ( is => 'ro', isa => 'AnyEvent::Net::Amazon::S3', required => 1 );
-has 'bucket'  => ( is => 'ro', isa => 'Str',             required => 1 );
-has 'creation_date' => ( is => 'ro', isa => 'Maybe[Str]', required => 0 );
 
 __PACKAGE__->meta->make_immutable;
 
@@ -77,29 +77,6 @@ Create a new bucket object. Expects a hash containing these two arguments:
 
 =back
 
-=cut
-
-sub _uri {
-    my ( $self, $key ) = @_;
-    return ($key)
-        ? $self->bucket . "/" . $self->account->_urlencode($key)
-        : $self->bucket . "/";
-}
-
-sub _conf_to_headers {
-    my ( $self, $conf ) = @_;
-    $conf = {} unless defined $conf;
-    $conf = {%$conf};    # clone it so as not to clobber the caller's copy
-
-    if ( $conf->{acl_short} ) {
-        $self->account->_validate_acl_short( $conf->{acl_short} );
-        $conf->{'x-amz-acl'} = $conf->{acl_short};
-        delete $conf->{acl_short};
-    }
-
-    return $conf;
-}
-
 =head2 add_key
 
 Takes three positional parameters:
@@ -121,7 +98,7 @@ Returns a boolean.
 =cut
 
 # returns bool
-sub add_key {
+sub add_key_async {
     my ( $self, $key, $value, $conf ) = @_;
 
     if ( ref($value) eq 'SCALAR' ) {
@@ -151,10 +128,15 @@ sub add_key {
     # we'll just send a HEAD first to see what's going on
 
     if ( ref($value) ) {
-        return $self->account->_send_request_expect_nothing_probed($http_request);
+        return $self->account->_send_request_expect_nothing_probed_async($http_request);
     } else {
-        return $self->account->_send_request_expect_nothing($http_request);
+        return $self->account->_send_request_expect_nothing_async($http_request);
     }
+}
+
+# returns bool
+sub add_key {
+    return shift->add_key_async(@_)->recv;
 }
 
 =head2 add_key_filename
@@ -177,9 +159,9 @@ Returns a boolean.
 
 =cut
 
-sub add_key_filename {
+sub add_key_filename_async {
     my ( $self, $key, $value, $conf ) = @_;
-    return $self->add_key( $key, \$value, $conf );
+    return $self->add_key_async( $key, \$value, $conf );
 }
 
 =head2 copy_key

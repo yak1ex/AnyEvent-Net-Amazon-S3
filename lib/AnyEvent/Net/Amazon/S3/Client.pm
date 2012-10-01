@@ -3,18 +3,18 @@ use Moose 0.85;
 use HTTP::Status qw(is_error status_message);
 use MooseX::StrictConstructor 0.16;
 use Moose::Util::TypeConstraints;
+use Net::Amazon::S3::Client;
+use AnyEvent;
 
 # ABSTRACT: An easy-to-use Amazon S3 client
 
-type 'Etag' => where { $_ =~ /^[a-z0-9]{32}$/ };
-
-type 'OwnerId' => where { $_ =~ /^[a-z0-9]{64}$/ };
+extends 'Net::Amazon::S3';
 
 has 's3' => ( is => 'ro', isa => 'AnyEvent::Net::Amazon::S3', required => 1 );
 
 __PACKAGE__->meta->make_immutable;
 
-sub buckets {
+sub buckets_async {
     my $self = shift;
     my $s3   = $self->s3;
 
@@ -22,7 +22,10 @@ sub buckets {
         = AnyEvent::Net::Amazon::S3::Request::ListAllMyBuckets->new( s3 => $s3 )
         ->http_request;
 
-    my $xpc = $self->_send_request_xpc($http_request);
+    my $cv = AE::cv;
+    $self->_send_request_xpc_async($http_request)->cb(sub { $cv->send(sub {
+
+    my $xpc = shift->recv;
 
     my $owner_id
         = $xpc->findvalue('/s3:ListAllMyBucketsResult/s3:Owner/s3:ID');
@@ -46,40 +49,48 @@ sub buckets {
 
     }
     return @buckets;
+
+    }->(shift))});
+    return $cv;
+}
+sub buckets {
+    return shift->buckets_async(@_)->recv;
 }
 
-sub create_bucket {
+sub create_bucket_async {
     my ( $self, %conf ) = @_;
 
     my $bucket = AnyEvent::Net::Amazon::S3::Client::Bucket->new(
         client => $self,
         name   => $conf{name},
     );
-    $bucket->_create(
+    my $cv = AE::cv;
+    $bucket->_create_async(
         acl_short           => $conf{acl_short},
         location_constraint => $conf{location_constraint},
-    );
-    return $bucket;
+    )->cb(sub { $cv->send($bucket) });
+    return $cv;
+}
+sub create_bucket {
+    return shift->create_bucket_async(@_)->recv;
 }
 
-sub bucket {
-    my ( $self, %conf ) = @_;
-    return AnyEvent::Net::Amazon::S3::Client::Bucket->new(
-        client => $self,
-        %conf,
-    );
-}
+sub _send_request_raw_async {
+    my ( $self, $http_request, $filename ) = @_;
 
+    return $self->s3->ua->request_async( $http_request, $filename );
+}
 sub _send_request_raw {
-    my ( $self, $http_request, $filename ) = @_;
-
-    return $self->s3->ua->request( $http_request, $filename );
+	return shift->_send_request_raw_async(@_)->recv;
 }
 
-sub _send_request {
+sub _send_request_async {
     my ( $self, $http_request, $filename ) = @_;
 
-    my $http_response = $self->_send_request_raw( $http_request, $filename );
+    my $cv = AE::cv;
+    $self->_send_request_raw_async( $http_request, $filename )->cb(sub { $cv->send(sub {
+
+    my $http_response = shift->recv;
 
     my $content      = $http_response->content;
     my $content_type = $http_response->content_type;
@@ -104,23 +115,47 @@ sub _send_request {
         }
     }
     return $http_response;
+
+    }->(shift))});
+    return $cv;
+}
+sub _send_request {
+    return shift->_send_request_async(@_)->recv;
 }
 
+sub _send_request_content_async {
+    my ( $self, $http_request, $filename ) = @_;
+    my $cv = AE::cv;
+    $self->_send_request_async( $http_request, $filename )->cb(sub { $cv->send(sub {
+
+    my $response = shift->recv;
+    return $response->content;
+
+    }->(shift))});
+    return $cv;
+}
 sub _send_request_content {
-    my ( $self, $http_request, $filename ) = @_;
-    my $http_response = $self->_send_request( $http_request, $filename );
-    return $http_response->content;
+    return shift->_send_request_content_async(@_)->recv;
 }
 
-sub _send_request_xpc {
+sub _send_request_xpc_async {
     my ( $self, $http_request, $filename ) = @_;
-    my $http_response = $self->_send_request( $http_request, $filename );
+    my $cv = AE::cv;
+    $self->_send_request_async( $http_request, $filename )->cb(sub { $cv->send(sub {
+
+    my $http_response = shift->recv;
 
     my $doc = $self->s3->libxml->parse_string( $http_response->content );
     my $xpc = XML::LibXML::XPathContext->new($doc);
     $xpc->registerNs( 's3', 'http://s3.amazonaws.com/doc/2006-03-01/' );
 
     return $xpc;
+
+    }->(shift))});
+    return $cv;
+}
+sub _send_request_xpc {
+    return shift->_send_request_xpc(@_)->recv;
 }
 
 1;

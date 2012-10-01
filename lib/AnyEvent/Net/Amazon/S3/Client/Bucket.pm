@@ -2,21 +2,17 @@ package AnyEvent::Net::Amazon::S3::Client::Bucket;
 use Moose 0.85;
 use MooseX::StrictConstructor 0.16;
 use Data::Stream::Bulk::Callback;
-use MooseX::Types::DateTime::MoreCoercions 0.07 qw( DateTime );
+use Net::Amazon::S3::Client::Bucket;
 
 # ABSTRACT: An easy-to-use Amazon S3 client bucket
 
+extends 'Net::Amazon::S3::Client::Bucket';
 has 'client' =>
     ( is => 'ro', isa => 'AnyEvent::Net::Amazon::S3::Client', required => 1 );
-has 'name' => ( is => 'ro', isa => 'Str', required => 1 );
-has 'creation_date' =>
-    ( is => 'ro', isa => DateTime, coerce => 1, required => 0 );
-has 'owner_id'           => ( is => 'ro', isa => 'OwnerId', required => 0 );
-has 'owner_display_name' => ( is => 'ro', isa => 'Str',     required => 0 );
 
 __PACKAGE__->meta->make_immutable;
 
-sub _create {
+sub _create_async {
     my ( $self, %conf ) = @_;
 
     my $http_request = AnyEvent::Net::Amazon::S3::Request::CreateBucket->new(
@@ -26,7 +22,11 @@ sub _create {
         location_constraint => $conf{location_constraint},
     )->http_request;
 
-    $self->client->_send_request($http_request);
+    $self->client->_send_request_async($http_request);
+}
+
+sub _create {
+	return shift->_create_async(@_)->recv;
 }
 
 sub delete {
