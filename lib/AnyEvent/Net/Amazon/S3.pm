@@ -223,7 +223,9 @@ sub buckets {
 
     # die $request->http_request->as_string;
 
-    my $xpc = $self->_send_request($http_request);
+    my $cv = AE::cv;
+    $self->_send_request_async($http_request)->cb(sub { $cv->send(sub {
+    my $xpc = shift->recv;
 
     return undef unless $xpc && !$self->_remember_errors($xpc);
 
@@ -247,6 +249,11 @@ sub buckets {
         owner_displayname => $owner_displayname,
         buckets           => \@buckets,
     };
+    }->(shift))});
+    return $cv;
+}
+sub bukets {
+    shift->buckets(@_)->recv;
 }
 
 =head2 add_bucket
@@ -275,7 +282,7 @@ Returns 0 on failure, AnyEvent::Net::Amazon::S3::Bucket object on success
 
 =cut
 
-sub add_bucket {
+sub add_bucket_async {
     my ( $self, $conf ) = @_;
 
     my $http_request = AnyEvent::Net::Amazon::S3::Request::CreateBucket->new(
@@ -285,10 +292,18 @@ sub add_bucket {
         location_constraint => $conf->{location_constraint},
     )->http_request;
 
+    my $cv = AE::cv;
+    $self->_send_request_expect_nothing_async($http_request)->cb(sub { $cv->send(sub {
+        
     return 0
-        unless $self->_send_request_expect_nothing($http_request);
+        unless shift->recv;
 
     return $self->bucket( $conf->{bucket} );
+    }->(shift))});
+    return $cv;
+}
+sub add_bucket {
+    shift->add_bucket_async(@_)->recv;
 }
 
 =head2 bucket BUCKET
@@ -323,7 +338,7 @@ Returns true if the bucket is successfully deleted.
 
 =cut
 
-sub delete_bucket {
+sub delete_bucket_async {
     my ( $self, $conf ) = @_;
     my $bucket;
     if ( eval { $conf->isa("Net::S3::Amazon::Bucket"); } ) {
@@ -338,7 +353,10 @@ sub delete_bucket {
         bucket => $bucket,
     )->http_request;
 
-    return $self->_send_request_expect_nothing($http_request);
+    return $self->_send_request_expect_nothing_async($http_request);
+}
+sub delete_bucket {
+    shift->delete_bucket_async(@_)->recv;
 }
 
 =head2 list_bucket
@@ -477,7 +495,7 @@ Each key is a hashref that looks like this:
 
 =cut
 
-sub list_bucket {
+sub list_bucket_async {
     my ( $self, $conf ) = @_;
 
     my $http_request = AnyEvent::Net::Amazon::S3::Request::ListBucket->new(
@@ -489,7 +507,9 @@ sub list_bucket {
         prefix    => $conf->{prefix},
     )->http_request;
 
-    my $xpc = $self->_send_request($http_request);
+    my $cv = AE::cv;
+    $self->_send_request_async($http_request)->cb(sub { $cv->send(sub {
+    my $xpc = shift->recv;
 
     return undef unless $xpc && !$self->_remember_errors($xpc);
 
@@ -543,6 +563,11 @@ sub list_bucket {
     }
 
     return $return;
+    }->(shift))});
+    return $cv;
+}
+sub list_bucket {
+    shift->list_bucket_async(@_)->recv;
 }
 
 =head2 list_bucket_all
@@ -555,13 +580,15 @@ Takes the same arguments as list_bucket.
 
 =cut
 
-sub list_bucket_all {
+sub list_bucket_all_async {
     my ( $self, $conf ) = @_;
     $conf ||= {};
     my $bucket = $conf->{bucket};
     croak 'must specify bucket' unless $bucket;
 
-    my $response = $self->list_bucket($conf);
+    my $cv = AE::cv;
+    $self->list_bucket_async($conf)->cb(sub { $cv->send(sub {
+    my $response = shift->recv;
     return $response unless $response->{is_truncated};
     my $all = $response;
 
@@ -578,8 +605,12 @@ sub list_bucket_all {
     delete $all->{is_truncated};
     delete $all->{next_marker};
     return $all;
+    }->(shift))});
+    return $cv;
 }
-
+sub list_bucket_all {
+    shift->list_bucket_all_async(@_)->recv;
+}
 =head2 add_key
 
 DEPRECATED. DO NOT USE
@@ -587,12 +618,15 @@ DEPRECATED. DO NOT USE
 =cut
 
 # compat wrapper; deprecated as of 2005-03-23
-sub add_key {
+sub add_key_async {
     my ( $self, $conf ) = @_;
     my $bucket = $self->_compat_bucket($conf);
     my $key    = delete $conf->{key};
     my $value  = delete $conf->{value};
-    return $bucket->add_key( $key, $value, $conf );
+    return $bucket->add_key_async( $key, $value, $conf );
+}
+sub add_key {
+    shift->add_key_async(@_)->recv;
 }
 
 =head2 get_key
@@ -602,10 +636,13 @@ DEPRECATED. DO NOT USE
 =cut
 
 # compat wrapper; deprecated as of 2005-03-23
-sub get_key {
+sub get_key_async {
     my ( $self, $conf ) = @_;
     my $bucket = $self->_compat_bucket($conf);
-    return $bucket->get_key( $conf->{key} );
+    return $bucket->get_key_async( $conf->{key} );
+}
+sub get_key {
+    shift->get_key_async(@_)->recv;
 }
 
 =head2 head_key
@@ -628,10 +665,13 @@ DEPRECATED. DO NOT USE
 =cut
 
 # compat wrapper; deprecated as of 2005-03-23
-sub delete_key {
+sub delete_key_async {
     my ( $self, $conf ) = @_;
     my $bucket = $self->_compat_bucket($conf);
-    return $bucket->delete_key( $conf->{key} );
+    return $bucket->delete_key_async( $conf->{key} );
+}
+sub delete_key {
+    shift->delete_key_async(@_)->recv;
 }
 
 # $self->_send_request_async($HTTP::Request)

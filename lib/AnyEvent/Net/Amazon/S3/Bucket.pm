@@ -163,6 +163,9 @@ sub add_key_filename_async {
     my ( $self, $key, $value, $conf ) = @_;
     return $self->add_key_async( $key, \$value, $conf );
 }
+sub add_key_filename {
+    shift->add_key_filename_async(@_)->recv;
+}
 
 =head2 copy_key
 
@@ -189,7 +192,7 @@ from the source key.
 
 =cut
 
-sub copy_key {
+sub copy_key_async {
     my ( $self, $key, $source, $conf ) = @_;
 
     my $acl_short;
@@ -215,7 +218,9 @@ sub copy_key {
         headers   => $conf,
     )->http_request;
 
-    my $response = $acct->_do_http( $http_request );
+    my $cv = AE::cv;
+    $acct->_do_http_async( $http_request )->cb(sub { $cv->send(sub {
+    my $response = shift->recv;
     my $xpc      = $acct->_xpc_of_content( $response->content );
 
     if ( !$response->is_success || !$xpc || $xpc->findnodes("//Error") ) {
@@ -224,6 +229,11 @@ sub copy_key {
     }
 
     return 1;
+    }->(shift))});
+    return $cv;
+}
+sub copy_key {
+    shift->copy_key_async(@_)->recv;
 }
 
 =head2 edit_metadata
@@ -248,7 +258,10 @@ sub edit_metadata {
     my ( $self, $key, $conf ) = @_;
     croak "Need configuration hash" unless defined $conf;
 
-    return $self->copy_key( $key, "/" . $self->bucket . "/" . $key, $conf );
+    return $self->copy_key_async( $key, "/" . $self->bucket . "/" . $key, $conf );
+}
+sub edit_metadata {
+    shift->edit_metadata_async(@_)->recv;
 }
 
 =head2 head_key KEY
@@ -257,9 +270,12 @@ Takes the name of a key in this bucket and returns its configuration hash
 
 =cut
 
-sub head_key {
+sub head_key_async {
     my ( $self, $key ) = @_;
     return $self->get_key( $key, "HEAD" );
+}
+sub head_key {
+    shift->head_key_async(@_)->recv;
 }
 
 =head2 get_key $key_name [$method]
