@@ -1,48 +1,14 @@
 package AnyEvent::Net::Amazon::S3::Request::SetBucketAccessControl;
-use Moose 0.85;
-use MooseX::StrictConstructor 0.16;
-extends 'AnyEvent::Net::Amazon::S3::Request';
 
 # ABSTRACT: An internal class to set a bucket's access control
 
-has 'bucket'    => ( is => 'ro', isa => 'BucketName',      required => 1 );
-has 'acl_short' => ( is => 'ro', isa => 'Maybe[AclShort]', required => 0 );
-has 'acl_xml'   => ( is => 'ro', isa => 'Maybe[Str]',      required => 0 );
-
-__PACKAGE__->meta->make_immutable;
-
-sub http_request {
-    my $self = shift;
-
-    unless ( $self->acl_xml || $self->acl_short ) {
-        confess "need either acl_xml or acl_short";
-    }
-
-    if ( $self->acl_xml && $self->acl_short ) {
-        confess "can not provide both acl_xml and acl_short";
-    }
-
-    my $headers
-        = ( $self->acl_short )
-        ? { 'x-amz-acl' => $self->acl_short }
-        : {};
-    my $xml = $self->acl_xml || '';
-
-    return AnyEvent::Net::Amazon::S3::HTTPRequest->new(
-        s3      => $self->s3,
-        method  => 'PUT',
-        path    => $self->_uri('') . '?acl',
-        headers => $headers,
-        content => $xml,
-    )->http_request;
-}
+use strict;
+use warnings;
+use parent qw(Net::Amazon::S3::Request::SetBucketAccessControl);
 
 1;
-
 __END__
-
-=for test_synopsis
-no strict 'vars'
+=pod
 
 =head1 SYNOPSIS
 
@@ -55,7 +21,7 @@ no strict 'vars'
 
 =head1 DESCRIPTION
 
-This module sets a bucket's access control.
+This module is just a dumb subclass of L<Net::Amazon::S3::Request::SetBucketAccessControl>.
 
 =head1 METHODS
 
@@ -63,3 +29,4 @@ This module sets a bucket's access control.
 
 This method returns a HTTP::Request object.
 
+=cut

@@ -1,42 +1,14 @@
 package AnyEvent::Net::Amazon::S3::Request::GetObject;
-use Moose 0.85;
-use MooseX::StrictConstructor 0.16;
-extends 'AnyEvent::Net::Amazon::S3::Request';
-
-has 'bucket' => ( is => 'ro', isa => 'BucketName', required => 1 );
-has 'key'    => ( is => 'ro', isa => 'Str',        required => 1 );
-has 'method' => ( is => 'ro', isa => 'HTTPMethod', required => 1 );
 
 # ABSTRACT: An internal class to get an object
 
-__PACKAGE__->meta->make_immutable;
-
-sub http_request {
-    my $self = shift;
-
-    return AnyEvent::Net::Amazon::S3::HTTPRequest->new(
-        s3     => $self->s3,
-        method => $self->method,
-        path   => $self->_uri( $self->key ),
-    )->http_request;
-}
-
-sub query_string_authentication_uri {
-    my ( $self, $expires ) = @_;
-
-    return AnyEvent::Net::Amazon::S3::HTTPRequest->new(
-        s3     => $self->s3,
-        method => $self->method,
-        path   => $self->_uri( $self->key ),
-    )->query_string_authentication_uri($expires);
-}
+use strict;
+use warnings;
+use parent qw(Net::Amazon::S3::Request::GetObject);
 
 1;
-
 __END__
-
-=for test_synopsis
-no strict 'vars'
+=pod
 
 =head1 SYNOPSIS
 
@@ -49,7 +21,7 @@ no strict 'vars'
 
 =head1 DESCRIPTION
 
-This module gets an object.
+This module is just a dumb subclass of L<Net::Amazon::S3::Request::GetObject>.
 
 =head1 METHODS
 
@@ -61,3 +33,4 @@ This method returns a HTTP::Request object.
 
 This method returns query string authentication URI.
 
+=cut

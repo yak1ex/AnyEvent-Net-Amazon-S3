@@ -1,30 +1,14 @@
 package AnyEvent::Net::Amazon::S3::Request::GetBucketLocationConstraint;
-use Moose 0.85;
-use MooseX::StrictConstructor 0.16;
-extends 'AnyEvent::Net::Amazon::S3::Request';
 
-# ABSTRACT: An internal class to get a bucket's location constraint
+# ABSTRACT: An internal class to create a bucket
 
-has 'bucket' => ( is => 'ro', isa => 'BucketName', required => 1 );
-
-__PACKAGE__->meta->make_immutable;
-
-sub http_request {
-    my $self = shift;
-
-    return AnyEvent::Net::Amazon::S3::HTTPRequest->new(
-        s3     => $self->s3,
-        method => 'GET',
-        path   => $self->_uri('') . '?location',
-    )->http_request;
-}
+use strict;
+use warnings;
+use parent qw(Net::Amazon::S3::Request::GetBucketLocationConstraint);
 
 1;
-
 __END__
-
-=for test_synopsis
-no strict 'vars'
+=pod
 
 =head1 SYNOPSIS
 
@@ -35,7 +19,7 @@ no strict 'vars'
 
 =head1 DESCRIPTION
 
-This module gets a bucket's location constraint.
+This module is just a dumb subclass of L<Net::Amazon::S3::Request::GetBucketLocationConstraint>.
 
 =head1 METHODS
 
@@ -43,3 +27,4 @@ This module gets a bucket's location constraint.
 
 This method returns a HTTP::Request object.
 
+=cut

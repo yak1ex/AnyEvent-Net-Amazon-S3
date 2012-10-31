@@ -1,31 +1,14 @@
 package AnyEvent::Net::Amazon::S3::Request::DeleteObject;
-use Moose 0.85;
-use Moose::Util::TypeConstraints;
-extends 'AnyEvent::Net::Amazon::S3::Request';
 
-# ABSTRACT: An internal class to delete an object
+# ABSTRACT: An internal class to create a bucket
 
-has 'bucket' => ( is => 'ro', isa => 'BucketName', required => 1 );
-has 'key'    => ( is => 'ro', isa => 'Str',        required => 1 );
-
-__PACKAGE__->meta->make_immutable;
-
-sub http_request {
-    my $self = shift;
-
-    return AnyEvent::Net::Amazon::S3::HTTPRequest->new(
-        s3     => $self->s3,
-        method => 'DELETE',
-        path   => $self->_uri( $self->key ),
-    )->http_request;
-}
+use strict;
+use warnings;
+use parent qw(Net::Amazon::S3::Request::DeleteObject);
 
 1;
-
 __END__
-
-=for test_synopsis
-no strict 'vars'
+=pod
 
 =head1 SYNOPSIS
 
@@ -37,7 +20,7 @@ no strict 'vars'
 
 =head1 DESCRIPTION
 
-This module deletes an object.
+This module is just a dumb subclass of L<Net::Amazon::S3::Request::DeleteObject>.
 
 =head1 METHODS
 
@@ -45,3 +28,4 @@ This module deletes an object.
 
 This method returns a HTTP::Request object.
 
+=cut
