@@ -293,7 +293,7 @@ sub add_bucket_async {
 
     my $cv = AE::cv;
     $self->_send_request_expect_nothing_async($http_request)->cb(sub { $cv->send(sub {
-        
+
     return 0
         unless shift->recv;
 
