@@ -112,7 +112,6 @@ use AnyEvent::Net::Amazon::S3::Client;
 use AnyEvent::Net::Amazon::S3::Client::Bucket;
 use AnyEvent::Net::Amazon::S3::Client::Object;
 use AnyEvent::Net::Amazon::S3::HTTPRequest;
-use AnyEvent::Net::Amazon::S3::Request;
 use AnyEvent::Net::Amazon::S3::Request::CreateBucket;
 use AnyEvent::Net::Amazon::S3::Request::DeleteBucket;
 use AnyEvent::Net::Amazon::S3::Request::DeleteObject;
