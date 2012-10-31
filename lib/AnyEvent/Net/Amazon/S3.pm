@@ -129,6 +129,7 @@ use AnyEvent::HTTP::LWP::UserAgent::Determined;
 use URI::Escape qw(uri_escape_utf8);
 use XML::LibXML;
 use XML::LibXML::XPathContext;
+use AnyEvent;
 
 extends 'Net::Amazon::S3';
 
@@ -213,7 +214,7 @@ Returns undef on error, else hashref of results
 
 =cut
 
-sub buckets {
+sub buckets_async {
     my $self = shift;
 
     my $http_request

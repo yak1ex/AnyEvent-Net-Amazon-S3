@@ -5,6 +5,7 @@ use Carp;
 use File::stat;
 use IO::File 1.14;
 use Net::Amazon::S3::Bucket;
+use AnyEvent;
 
 extends 'Net::Amazon::S3::Bucket';
 has 'account' => ( is => 'ro', isa => 'AnyEvent::Net::Amazon::S3', required => 1 );
@@ -254,7 +255,7 @@ The new configuration hash to use
 
 =cut
 
-sub edit_metadata {
+sub edit_metadata_async {
     my ( $self, $key, $conf ) = @_;
     croak "Need configuration hash" unless defined $conf;
 
