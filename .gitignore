@@ -1,0 +1,4 @@
+.build/
+AnyEvent-HTTP-Net-Amazon-S3-*/
+AnyEvent-HTTP-Net-Amazon-S3-*.tar.gz
+*.BAK
