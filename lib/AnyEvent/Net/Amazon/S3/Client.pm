@@ -2,10 +2,8 @@ package AnyEvent::Net::Amazon::S3::Client;
 
 # ABSTRACT: An easy-to-use Amazon S3 client
 
-# TODO: Replace relevant package name
-#     * Net::Amazon::S3::Request::ListAllMyBuckets
-#     * Net::Amazon::S3::Client::Bucket
 use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon::S3::Client',
+        -transformer => 'Net::Amazon::S3',
         -translate_func => [qw(buckets create_bucket _send_request_raw _send_request _send_request_content _send_request_xpc)],
         -replace_func => [qw(_create request)]
 ;

@@ -5,13 +5,10 @@ package AnyEvent::Net::Amazon::S3::Client::Object;
 use strict;
 use warnings;
 
-# TODO: Replace relevant package name
-#     * Net::Amazon::S3::Request::GetObject
-#     * Net::Amazon::S3::Request::PutObject
-#     * Net::Amazon::S3::Request::DeleteObject
 # TODO: _content_sub might become more async manner?
 # NOTE: exists and delete have HIGH risk.
 use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon::S3::Client::Object',
+        -transformer => 'Net::Amazon::S3',
 	-translate_func => [qw(exists get get_filename put put_filename delete)],
 	-replace_func => [qw(_send_request_raw _send_request)]
 ;

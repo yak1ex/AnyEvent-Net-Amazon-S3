@@ -71,18 +71,10 @@ Create a new bucket object. Expects a hash containing these two arguments:
 
 =cut
 
-# TODO: Replace relevant package name
-#     * Net::Amazon::S3::Request::PutObject
-#     * Net::Amazon::S3::Request::GetObject
-#     * Net::Amazon::S3::Request::DeleteObject
-#     * Net::Amazon::S3::Request::GetObjectAccessControl
-#     * Net::Amazon::S3::Request::GetBucketAccessControl
-#     * Net::Amazon::S3::Request::SetObjectAccessControl
-#     * Net::Amazon::S3::Request::SetBucketAccessControl
-#     * Net::Amazon::S3::Request::GetBucketLocationConstraint
 # TODO: _content_sub might become more async manner?
 
 use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon::S3::Bucket',
+        -transformer => 'Net::Amazon::S3',
         -translate_func => [qw(add_key add_key_filename copy_key edit_metadata head_key get_key get_key_filename delete_key delete_bucket list list_all get_acl set_acl get_location_constraint)],
         -replace_func => [qw(_send_request_expect_nothing_probed list_bucket list_bucket_all _do_http _send_request_expect_nothing _send_request)]
 ;

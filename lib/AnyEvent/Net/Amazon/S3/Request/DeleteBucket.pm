@@ -4,11 +4,13 @@ package AnyEvent::Net::Amazon::S3::Request::DeleteBucket;
 
 use strict;
 use warnings;
-use parent qw(Net::Amazon::S3::Request::DeleteBucket);
+
+use Module::AnyEvent::Helper::Filter -as => __PACKAGE__,
+        -target => substr(__PACKAGE__, 10),
+        -transformer => 'Net::Amazon::S3';
 
 1;
 __END__
-=pod
 
 =head1 SYNOPSIS
 
@@ -26,5 +28,3 @@ This module is just a dumb sublcass of L<Net::Amazon::S3::Request::DeleteBucket>
 =head2 http_request
 
 This method returns a HTTP::Request object.
-
-=cut

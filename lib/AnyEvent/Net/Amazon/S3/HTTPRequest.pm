@@ -4,11 +4,13 @@ package AnyEvent::Net::Amazon::S3::HTTPRequest;
 
 use strict;
 use warnings;
-use parent qw(Net::Amazon::S3::HTTPRequest);
+
+use Module::AnyEvent::Helper::Filter -as => __PACKAGE__,
+        -target => substr(__PACKAGE__, 10),
+        -transformer => 'Net::Amazon::S3';
 
 1;
 __END__
-=pod
 
 =head1 SYNOPSIS
 

@@ -4,11 +4,13 @@ package AnyEvent::Net::Amazon::S3::Request::GetBucketLocationConstraint;
 
 use strict;
 use warnings;
-use parent qw(Net::Amazon::S3::Request::GetBucketLocationConstraint);
+
+use Module::AnyEvent::Helper::Filter -as => __PACKAGE__,
+        -target => substr(__PACKAGE__, 10),
+        -transformer => 'Net::Amazon::S3';
 
 1;
 __END__
-=pod
 
 =head1 SYNOPSIS
 
@@ -26,5 +28,3 @@ This module is just a dumb subclass of L<Net::Amazon::S3::Request::GetBucketLoca
 =head2 http_request
 
 This method returns a HTTP::Request object.
-
-=cut

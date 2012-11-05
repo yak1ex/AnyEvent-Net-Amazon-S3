@@ -5,10 +5,10 @@ package AnyEvent::Net::Amazon::S3::Client::Bucket;
 use strict;
 use warnings;
 
-# TODO: Maybe, it is necessary to replace Net::Amazon::S3::Client::Object
 # TODO: list()
 
 use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon::S3::Client::Bucket',
+        -transformer => 'Net::Amazon::S3',
 	-translate_func => [qw(_create delete acl location_constraint)],
 	-replace_func => [qw(_send_request _send_request_content _send_request_xpc)]
 ;

@@ -108,8 +108,6 @@ use Carp;
 
 use Module::AnyEvent::Helper;
 
-use AnyEvent::HTTP::LWP::UserAgent;
-use AnyEvent::HTTP::LWP::UserAgent::Determined;
 use XML::LibXML;
 use AnyEvent;
 
@@ -158,32 +156,6 @@ as recommended by Amazon. Defaults to off.
 
 =cut
 
-my $KEEP_ALIVE_CACHESIZE = 10;
-
-sub BUILD {
-    my $self = shift;
-
-    my $ua;
-    if ( $self->retry ) {
-        $ua = AnyEvent::HTTP::LWP::UserAgent::Determined->new(
-            keep_alive            => $KEEP_ALIVE_CACHESIZE,
-            requests_redirectable => [qw(GET HEAD DELETE PUT)],
-        );
-        $ua->timing('1,2,4,8,16,32');
-    } else {
-        $ua = AnyEvent::HTTP::LWP::UserAgent->new(
-            keep_alive            => $KEEP_ALIVE_CACHESIZE,
-            requests_redirectable => [qw(GET HEAD DELETE PUT)],
-        );
-    }
-
-    $ua->timeout( $self->timeout );
-    $ua->env_proxy;
-
-    $self->ua($ua);
-    $self->libxml( XML::LibXML->new ); # Set in superclass
-}
-
 sub list_bucket_all_async {
     my ( $self, $conf ) = @_;
     $conf ||= {};
@@ -220,10 +192,10 @@ sub list_bucket_all_async {
 }
 
 use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon::S3',
+        -transformer => 'Net::Amazon::S3',
         -remove_func => [qw(list_bucket_all)],
         -translate_func => [qw(buckets add_bucket delete_bucket list_bucket add_key get_key head_key delete_key _send_request _do_http _send_request_expect_nothing _send_request_expect_nothing_probed)],
-        -replace_func => [qw(request)],
-        -delete_func => [qw(BUILD)]
+        -replace_func => [qw(request)]
 ;
 
 1;
