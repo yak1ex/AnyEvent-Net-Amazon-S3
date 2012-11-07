@@ -10,10 +10,8 @@ sub new
     my ($self) = @_;
     my $ret = $self->SUPER::new(
         -all => sub {
-print STDERR "BEFORE: $_ ";
             s/^Net::Amazon::S3\b/AnyEvent::Net::Amazon::S3/g;
             s/^LWP::UserAgent\b/AnyEvent::HTTP::LWP::UserAgent/g;
-print STDERR "AFTER: $_ ";
         }
     );
     return $ret;
