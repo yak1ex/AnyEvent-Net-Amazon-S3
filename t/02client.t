@@ -45,7 +45,7 @@ my $bucket_name = 'net-amazon-s3-test-' . lc $aws_access_key_id;
 my $bucket = $client->create_bucket(
     name                => $bucket_name,
     acl_short           => 'public-read',
-    location_constraint => 'EU',
+    location_constraint => 'US',
 );
 
 is( $bucket->name, $bucket_name, 'newly created bucket has correct name' );
@@ -56,7 +56,7 @@ like(
     'newly created bucket is public-readable'
 );
 
-is( $bucket->location_constraint, 'EU', 'newly created bucket is in the EU' );
+is( $bucket->location_constraint, 'US', 'newly created bucket is in the US' );
 
 my $stream = $bucket->list;
 until ( $stream->is_done ) {
