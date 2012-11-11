@@ -1,6 +1,7 @@
 package AnyEvent::Net::Amazon::S3::HTTPRequest;
 
 # ABSTRACT: Create a signed HTTP::Request
+# VERSION
 
 use strict;
 use warnings;
@@ -11,6 +12,9 @@ use Module::AnyEvent::Helper::Filter -as => __PACKAGE__,
 
 1;
 __END__
+
+=for test_synopsis
+no strict 'vars';
 
 =head1 SYNOPSIS
 
@@ -25,16 +29,15 @@ __END__
 =head1 DESCRIPTION
 
 This module creates an HTTP::Request object that is signed
-appropriately for Amazon S3, which is just a dumb subclass of
-L<Net::Amazon::S3::HTTPRequest>.
+appropriately for Amazon S3,
+and the same as L<Net::Amazon::S3::HTTPRequest>,
+except for its name.
 
-=head1 METHODS
-
-=head2 http_request
+=method http_request
 
 This method creates, signs and returns a HTTP::Request object.
 
-=head2 query_string_authentication_uri
+=method query_string_authentication_uri
 
 This method creates, signs and returns a query string authentication
 URI.

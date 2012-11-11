@@ -1,6 +1,7 @@
 package AnyEvent::Net::Amazon::S3::Request::GetBucketAccessControl;
 
 # ABSTRACT: An internal class to create a bucket
+# VERSION
 
 use strict;
 use warnings;
@@ -12,6 +13,9 @@ use Module::AnyEvent::Helper::Filter -as => __PACKAGE__,
 1;
 __END__
 
+=for test_synopsis
+no strict 'vars';
+
 =head1 SYNOPSIS
 
   my $http_request = AnyEvent::Net::Amazon::S3::Request::GetBucketAccessControl->new(
@@ -21,7 +25,7 @@ __END__
 
 =head1 DESCRIPTION
 
-This module is just a dumb sublclass of L<Net::Amazon::S3::Request::GetBucketAccessControl>.
+This module is the same as L<Net::Amazon::S3::Request::GetBucketAccessControl>, except for its name.
 
 =head1 METHODS
 

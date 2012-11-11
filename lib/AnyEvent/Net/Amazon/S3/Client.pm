@@ -1,6 +1,10 @@
 package AnyEvent::Net::Amazon::S3::Client;
 
-# ABSTRACT: An easy-to-use Amazon S3 client
+# ABSTRACT: An easy-to-use Amazon S3 client with AnyEvent
+# VERSION
+
+use strict;
+use warnings;
 
 use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon::S3::Client',
         -transformer => 'Net::Amazon::S3',
@@ -13,7 +17,8 @@ use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon
 __END__
 
 =for test_synopsis
-no strict 'vars'
+no strict 'vars';
+no warnings;
 
 =head1 SYNOPSIS
 
@@ -45,44 +50,41 @@ no strict 'vars'
 
 =head1 DESCRIPTION
 
-The L<AnyEvent::Net::Amazon::S3> module was written when the Amazon S3 service
-had just come out and it is a light wrapper around the APIs. Some
-bad API decisions were also made. The
-L<AnyEvent::Net::Amazon::S3::Client>, L<AnyEvent::Net::Amazon::S3::Client::Bucket> and
-L<AnyEvent::Net::Amazon::S3::Client::Object> classes are designed after years
-of usage to be easy to use for common tasks.
+This module provides the same interface as L<Net::Amazon::S3::Client>.
+In addition, some asynchronous methods returning AnyEvent condition variable are added.
 
-These classes throw an exception when a fatal error occurs. It
-also is very careful to pass an MD5 of the content when uploaded
-to S3 and check the resultant ETag.
-
-WARNING: This is an early release of the Client classes, the APIs
+WARNING: Original L<Net::Amazon::S3::Client> says that it is an early release of the Client classes, the APIs
 may change.
 
 =head1 METHODS
 
-=head2 buckets
+All L<Net::Amazon::S3::Client> methods are available.
+In addition, there are the following asynchronous methods.
+Arguments of the methods are identical as original but return value becomes L<AnyEvent> condition variable.
+You can get actual return value by calling C<shift-E<gt>recv()>.
 
-  # list all my buckets
-  # returns a list of L<AnyEvent::Net::Amazon::S3::Client::Bucket> objects
-  my @buckets = $client->buckets;
-  foreach my $bucket (@buckets) {
-    print $bucket->name . "\n";
-  }
+=for :list
+= buckets_async
+= create_bucket_async
 
-=head2 create_bucket
+=begin comment
 
-  # create a new bucket
-  # returns a L<AnyEvent::Net::Amazon::S3::Client::Bucket> object
-  my $bucket = $client->create_bucket(
-    name                => $bucket_name,
-    acl_short           => 'private',
-    location_constraint => 'US',
-  );
+This section is not outputted to actual POD document but for Pod::Coverage.
+Description for The followings are omitted.
 
-=head2 bucket
+=over 4
 
-  # or use an existing bucket
-  # returns a L<AnyEvent::Net::Amazon::S3::Client::Bucket> object
-  my $bucket = $client->bucket( name => $bucket_name );
+=item bucket
 
+Described in L<Net::Amazon::S3::Client>.
+
+=back
+
+=end comment
+
+=head1 SEE ALSO
+
+=for :list
+* L<AnyEvent::Net::Amazon::S3>
+* L<Net::Amazaon::S3::Client> - Based on it as original.
+* L<Module::AnyEvent::Helper> - Used by this module. There are some description for needs of _async methods.

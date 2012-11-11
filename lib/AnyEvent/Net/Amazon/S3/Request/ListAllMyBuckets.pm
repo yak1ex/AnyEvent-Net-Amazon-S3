@@ -1,6 +1,7 @@
 package AnyEvent::Net::Amazon::S3::Request::ListAllMyBuckets;
 
 # ABSTRACT: An internal class to list all buckets
+# VERSION
 
 use strict;
 use warnings;
@@ -12,6 +13,9 @@ use Module::AnyEvent::Helper::Filter -as => __PACKAGE__,
 1;
 __END__
 
+=for test_synopsis
+no strict 'vars';
+
 =head1 SYNOPSIS
 
   my $http_request
@@ -20,7 +24,7 @@ __END__
 
 =head1 DESCRIPTION
 
-This module is just a dumb subclass of L<Net::Amazon::S3::Request::ListAllMyBuckets>.
+This module is the same as L<Net::Amazon::S3::Request::ListAllMyBuckets>, except for its name.
 
 =head1 METHODS
 

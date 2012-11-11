@@ -12,6 +12,7 @@ use Term::ProgressBar::Simple;
 
 # PODNAME: s3cl
 # ABSTRACT: Command line for Amazon s3 cloud storage
+# VERSION
 
 =head1 SYNOPSIS
 

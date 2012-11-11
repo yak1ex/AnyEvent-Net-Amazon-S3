@@ -1,6 +1,7 @@
 package AnyEvent::Net::Amazon::S3::Request::CreateBucket;
 
 # ABSTRACT: An internal class to create a bucket
+# VERSION
 
 use strict;
 use warnings;
@@ -11,6 +12,9 @@ use Module::AnyEvent::Helper::Filter -as => __PACKAGE__,
 
 1;
 __END__
+
+=for test_synopsis
+no strict 'vars';
 
 =head1 SYNOPSIS
 
@@ -23,7 +27,7 @@ __END__
 
 =head1 DESCRIPTION
 
-Just a dumb subclass of L<Net::Amazon::S3::Request::CreateBucket>.
+This module is the same as L<Net::Amazon::S3::Request::CreateBucket>, except for its name.
 
 =head1 METHODS
 

@@ -1,9 +1,22 @@
 package AnyEvent::Net::Amazon::S3::Bucket;
 
+# ABSTRACT: convenience object for working with Amazon S3 buckets
+# VERSION
+
 use strict;
 use warnings;
 
-# ABSTRACT: convenience object for working with Amazon S3 buckets
+# TODO: _content_sub might become more async manner?
+
+use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon::S3::Bucket',
+        -transformer => 'Net::Amazon::S3',
+        -translate_func => [qw(add_key add_key_filename copy_key edit_metadata head_key get_key get_key_filename delete_key delete_bucket list list_all get_acl set_acl get_location_constraint)],
+        -replace_func => [qw(_send_request_expect_nothing_probed list_bucket list_bucket_all _do_http _send_request_expect_nothing _send_request)]
+;
+
+1;
+
+__END__
 
 =for test_synopsis
 no strict 'vars'
@@ -53,37 +66,57 @@ no strict 'vars'
 =head1 DESCRIPTION
 
 This module represents an S3 bucket.  You get a bucket object
-from the AnyEvent::Net::Amazon::S3 object.
+from the L<AnyEvent::Net::Amazon::S3> object.
+
+This module provides the same interface as L<Net::Amazon::S3::Bucket>.
+In addition, some asynchronous methods returning AnyEvent condition variable are added.
 
 =head1 METHODS
 
-=head2 new
+All L<Net::Amazon::S3::Bucket> methods are available.
+In addition, there are the following asynchronous methods.
+Arguments of the methods are identical as original but return value becomes L<AnyEvent> condition variable.
+You can get actual return value by calling C<shift-E<gt>recv()>.
 
-Create a new bucket object. Expects a hash containing these two arguments:
+=for :list
+= add_key_async
+= add_key_filename_async
+= copy_key_async
+= edit_metadata_async
+= head_key_async
+= get_key_async
+= get_key_filename_async
+= delete_key_async
+= delete_bucket_async
+= list_async
+= list_all_async
+= get_acl_async
+= set_acl_async
+= get_location_constraint_async
 
-=over
+=begin comment
 
-=item bucket
+This section is not outputted to actual POD document but for Pod::Coverage.
+Description for The followings are omitted.
 
-=item account
+=over 4
+
+=item err
+
+Described in L<Net::Amazon::S3::Bucket>.
+
+=item errstr
+
+Described in L<Net::Amazon::S3::Bucket>.
 
 =back
 
-=cut
-
-# TODO: _content_sub might become more async manner?
-
-use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon::S3::Bucket',
-        -transformer => 'Net::Amazon::S3',
-        -translate_func => [qw(add_key add_key_filename copy_key edit_metadata head_key get_key get_key_filename delete_key delete_bucket list list_all get_acl set_acl get_location_constraint)],
-        -replace_func => [qw(_send_request_expect_nothing_probed list_bucket list_bucket_all _do_http _send_request_expect_nothing _send_request)]
-;
-
-1;
-
-__END__
+=end comment
 
 =head1 SEE ALSO
 
-L<AnyEvent::Net::Amazon::S3>
+=for :list
+* L<AnyEvent::Net::Amazon::S3>
+* L<Net::Amazon::S3> - Based on it as original.
+* L<Module::AnyEvent::Helper> - Used by this module. There are some description for needs of _async methods.
 

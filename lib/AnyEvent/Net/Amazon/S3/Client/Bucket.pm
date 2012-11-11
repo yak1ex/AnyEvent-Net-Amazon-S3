@@ -1,16 +1,16 @@
 package AnyEvent::Net::Amazon::S3::Client::Bucket;
 
 # ABSTRACT: An easy-to-use Amazon S3 client bucket
+# VERSION
 
 use strict;
 use warnings;
 
-# TODO: list()
-
 use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon::S3::Client::Bucket',
-        -transformer => 'Net::Amazon::S3',
-	-translate_func => [qw(_create delete acl location_constraint)],
-	-replace_func => [qw(_send_request _send_request_content _send_request_xpc)]
+        -transformer => 'Net::Amazon::S3::Client::Bucket',
+        -translate_func => [qw(_create delete acl location_constraint)],
+        -replace_func => [qw(_send_request _send_request_content _send_request_xpc)],
+        -exclude_func => [qw(list)]
 ;
 
 1;
@@ -56,47 +56,37 @@ no strict 'vars'
 
 This module represents buckets.
 
+This module provides the same interface as L<Net::Amazon::S3::Client::Bucket>.
+In addition, some asynchronous methods returning AnyEvent condition variable are added.
+
 =head1 METHODS
 
-=head2 acl
+All L<Net::Amazon::S3::Client::Bucket> methods are available.
+In addition, there are the following asynchronous methods.
+Arguments of the methods are identical as original but return value becomes L<AnyEvent> condition variable.
+You can get actual return value by calling C<shift-E<gt>recv()>.
 
-  # return the ACL XML
-  my $acl = $bucket->acl;
+=for :list
+= acl_async
+= delete_async
+= list_async
+= location_constraint_async
 
-=head2 delete
+=begin comment
 
-  # delete the bucket (it must be empty)
-  $bucket->delete;
+This section is not outputted to actual POD document but for Pod::Coverage.
+Description for The followings are omitted.
 
-=head2 list
+=over 4
 
-  # list objects in the bucket
-  # this returns a L<Data::Stream::Bulk> object which returns a
-  # stream of L<AnyEvent::Net::Amazon::S3::Client::Object> objects, as it may
-  # have to issue multiple API requests
-  my $stream = $bucket->list;
-  until ( $stream->is_done ) {
-    foreach my $object ( $stream->items ) {
-      ...
-    }
-  }
+=item list
 
-  # or list by a prefix
-  my $prefix_stream = $bucket->list( { prefix => 'logs/' } );
+Described in L<Net::Amazon::S3::Client::Bucket>.
 
-=head2 location_constraint
+=item object
 
-  # return the bucket location constraint
-  print "Bucket is in the " . $bucket->location_constraint . "\n";
+Described in L<Net::Amazon::S3::Client::Bucket>.
 
-=head2 name
+=back
 
-  # return the bucket name
-  print $bucket->name . "\n";
-
-=head2 object
-
-  # returns a L<AnyEvent::Net::Amazon::S3::Client::Object>, which can then
-  # be used to get or put
-  my $object = $bucket->object( key => 'this is the key' );
-
+=end comment

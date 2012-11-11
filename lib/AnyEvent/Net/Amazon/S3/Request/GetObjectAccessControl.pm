@@ -1,6 +1,7 @@
 package AnyEvent::Net::Amazon::S3::Request::GetObjectAccessControl;
 
 # ABSTRACT: An internal class to get an object's access control
+# VERSION
 
 use strict;
 use warnings;
@@ -12,6 +13,9 @@ use Module::AnyEvent::Helper::Filter -as => __PACKAGE__,
 1;
 __END__
 
+=for test_synopsis
+no strict 'vars';
+
 =head1 SYNOPSIS
 
   my $http_request = AnyEvent::Net::Amazon::S3::Request::GetObjectAccessControl->new(
@@ -22,7 +26,7 @@ __END__
 
 =head1 DESCRIPTION
 
-This module is just a dumb subclass of L<Net::Amazon::S3::Request::GetObjectAccessControl>.
+This module is the same as L<Net::Amazon::S3::Request::GetObjectAccessControl>, except for its name.
 
 =head1 METHODS
 

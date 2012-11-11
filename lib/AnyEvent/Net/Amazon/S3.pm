@@ -1,9 +1,67 @@
 package AnyEvent::Net::Amazon::S3;
 
 # ABSTRACT: Use the Amazon S3 - Simple Storage Service
+# VERSION
+
+use strict;
+use warnings;
+
+use Carp;
+use Module::AnyEvent::Helper;
+use AnyEvent;
+
+sub list_bucket_all_async {
+    my ( $self, $conf ) = @_;
+    $conf ||= {};
+    my $bucket = $conf->{bucket};
+    croak 'must specify bucket' unless $bucket;
+
+    my $cv = AE::cv;
+    Module::AnyEvent::Helper::bind_scalar($self->list_bucket_async($conf), sub {
+
+        my $response = shift->recv;
+        return $response unless $response->{is_truncated};
+        my $all = $response;
+
+        my $iter; $iter = sub {
+            my $next_marker = $response->{next_marker}
+                || $response->{keys}->[-1]->{key};
+            $conf->{marker} = $next_marker;
+            $conf->{bucket} = $bucket;
+            Module::AnyEvent::Helper::bind_scalar($self->list_bucket_async($conf), sub {
+                $response       = shift->recv;
+                push @{ $all->{keys} }, @{ $response->{keys} };
+                if($response->{is_truncated}) {
+                    $iter->();
+                } else {
+                    delete $all->{is_truncated};
+                    delete $all->{next_marker};
+                    return $all;
+                }
+            });
+        };
+        $iter->();
+    });
+    return $cv;
+}
+
+use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon::S3',
+        -transformer => 'Net::Amazon::S3',
+        -remove_func => [qw(list_bucket_all)],
+        -translate_func => [qw(buckets add_bucket delete_bucket list_bucket add_key get_key head_key delete_key _send_request _do_http _send_request_expect_nothing _send_request_expect_nothing_probed)],
+        -replace_func => [qw(request)]
+;
+
+1;
+
+__END__
+
+=for test_synopsis
+no warnings;
 
 =head1 SYNOPSIS
 
+  # Can be used as same as Net::Amazon::S3
   use AnyEvent::Net::Amazon::S3;
   my $aws_access_key_id     = 'fill me in';
   my $aws_secret_access_key = 'fill me in too';
@@ -70,185 +128,79 @@ package AnyEvent::Net::Amazon::S3;
 
 =head1 DESCRIPTION
 
-This module provides a Perlish interface to Amazon S3. From the
-developer blurb: "Amazon S3 is storage for the Internet. It is
-designed to make web-scale computing easier for developers. Amazon S3
-provides a simple web services interface that can be used to store and
-retrieve any amount of data, at any time, from anywhere on the web. It
-gives any developer access to the same highly scalable, reliable,
-fast, inexpensive data storage infrastructure that Amazon uses to run
-its own global network of web sites. The service aims to maximize
-benefits of scale and to pass those benefits on to developers".
-
-To find out more about S3, please visit: http://s3.amazonaws.com/
-
-To use this module you will need to sign up to Amazon Web Services and
-provide an "Access Key ID" and " Secret Access Key". If you use this
-module, you will incurr costs as specified by Amazon. Please check the
-costs. If you use this module with your Access Key ID and Secret
-Access Key you must be responsible for these costs.
-
-I highly recommend reading all about S3, but in a nutshell data is
-stored in values. Values are referenced by keys, and keys are stored
-in buckets. Bucket names are global.
+This module provides the same interface as L<Net::Amazon::S3>.
+In addition, some asynchronous methods returning AnyEvent condition variable are added.
 
 Note: This is the legacy interface, please check out
 L<AnyEvent::Net::Amazon::S3::Client> instead.
 
-Development of this code happens here: http://github.com/pfig/net-amazon-s3/
-
-Homepage for the project (just started) is at http://pfig.github.com/net-amazon-s3/
-
-=cut
-
-use strict;
-use warnings;
-
-use Carp;
-
-use Module::AnyEvent::Helper;
-
-use XML::LibXML;
-use AnyEvent;
-
 =head1 METHODS
 
-=head2 new
+All L<Net::Amazon::S3> methods are available.
+In addition, there are the following asynchronous methods.
+Arguments of the methods are identical as original but return value becomes L<AnyEvent> condition variable.
+You can get actual return value by calling C<shift-E<gt>recv()>.
 
-Create a new S3 client object. Takes some arguments:
+=for :list
+= buckets_async
+= add_bucket_async
+= delete_bucket_async
+= list_bucket_async
+= list_bucket_all_async
+= add_key_async
+= get_key_async
+= head_key_async
+= delete_key_async
 
-=over
+=begin :comment
 
-=item aws_access_key_id
+This section is not outputted to actual POD document but for Pod::Coverage.
+Description for the followings are omitted.
 
-Use your Access Key ID as the value of the AWSAccessKeyId parameter
-in requests you send to Amazon Web Services (when required). Your
-Access Key ID identifies you as the party responsible for the
-request.
+=over 4
 
-=item aws_secret_access_key
+=item  BUILD
 
-Since your Access Key ID is not encrypted in requests to AWS, it
-could be discovered and used by anyone. Services that are not free
-require you to provide additional information, a request signature,
-to verify that a request containing your unique Access Key ID could
-only have come from you.
+Moose private function
 
-DO NOT INCLUDE THIS IN SCRIPTS OR APPLICATIONS YOU DISTRIBUTE. YOU'LL BE SORRY
+=item bucket
 
-=item secure
-
-Set this to C<1> if you want to use SSL-encrypted connections when talking
-to S3. Defaults to C<0>.
-
-=item timeout
-
-How many seconds should your script wait before bailing on a request to S3? Defaults
-to 30.
-
-=item retry
-
-If this library should retry upon errors. This option is recommended.
-This uses exponential backoff with retries after 1, 2, 4, 8, 16, 32 seconds,
-as recommended by Amazon. Defaults to off.
+Described in L<Net::Amazon::S3>.
 
 =back
 
-=cut
-
-sub list_bucket_all_async {
-    my ( $self, $conf ) = @_;
-    $conf ||= {};
-    my $bucket = $conf->{bucket};
-    croak 'must specify bucket' unless $bucket;
-
-    my $cv = AE::cv;
-    Module::AnyEvent::Helper::bind_scalar($self->list_bucket_async($conf), sub {
-
-        my $response = shift->recv;
-        return $response unless $response->{is_truncated};
-        my $all = $response;
-
-        my $iter; $iter = sub {
-            my $next_marker = $response->{next_marker}
-                || $response->{keys}->[-1]->{key};
-            $conf->{marker} = $next_marker;
-            $conf->{bucket} = $bucket;
-            Module::AnyEvent::Helper::bind_scalar($self->list_bucket_async($conf), sub {
-                $response       = shift->recv;
-                push @{ $all->{keys} }, @{ $response->{keys} };
-                if($response->{is_truncated}) {
-                    $iter->();
-                } else {
-                    delete $all->{is_truncated};
-                    delete $all->{next_marker};
-                    return $all;
-                }
-            });
-        };
-        $iter->();
-    });
-    return $cv;
-}
-
-use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon::S3',
-        -transformer => 'Net::Amazon::S3',
-        -remove_func => [qw(list_bucket_all)],
-        -translate_func => [qw(buckets add_bucket delete_bucket list_bucket add_key get_key head_key delete_key _send_request _do_http _send_request_expect_nothing _send_request_expect_nothing_probed)],
-        -replace_func => [qw(request)]
-;
-
-1;
-
-__END__
-
-=head1 LICENSE
-
-This module contains code modified from Amazon that contains the
-following notice:
-
-  #  This software code is made available "AS IS" without warranties of any
-  #  kind.  You may copy, display, modify and redistribute the software
-  #  code either by itself or as incorporated into your code; provided that
-  #  you do not remove any proprietary notices.  Your use of this software
-  #  code is at your own risk and you waive any claim against Amazon
-  #  Digital Services, Inc. or its affiliates with respect to your use of
-  #  this software code. (c) 2006 Amazon Digital Services, Inc. or its
-  #  affiliates.
+=end :comment
 
 =head1 TESTING
+
+The following description is extracted from L<Net::Amazon::S3>.
+They are all applicable to this module.
 
 Testing S3 is a tricky thing. Amazon wants to charge you a bit of
 money each time you use their service. And yes, testing counts as using.
 Because of this, the application's test suite skips anything approaching
 a real test unless you set these three environment variables:
 
-=over
+=begin :list
 
-=item AMAZON_S3_EXPENSIVE_TESTS
+= AMAZON_S3_EXPENSIVE_TESTS
 
 Doesn't matter what you set it to. Just has to be set
 
-=item AWS_ACCESS_KEY_ID
+= AWS_ACCESS_KEY_ID
 
 Your AWS access key
 
-=item AWS_ACCESS_KEY_SECRET
+= AWS_ACCESS_KEY_SECRET
 
 Your AWS sekkr1t passkey. Be forewarned that setting this environment variable
 on a shared system might leak that information to another user. Be careful.
 
-=back
-
-=head1 AUTHOR
-
-Leon Brocard <acme@astray.com> and unknown Amazon Digital Services programmers.
-
-Brad Fitzpatrick <brad@danga.com> - return values, Bucket object
-
-Pedro Figueiredo <me@pedrofigueiredo.org> - since 0.54
+=end :list
 
 =head1 SEE ALSO
 
-L<AnyEvent::Net::Amazon::S3::Bucket>
-
+=for :list
+* L<AnyEvent::Net::Amazon::S3::Bucket>
+* L<Net::Amazaon::S3> - Based on it as original.
+* L<Module::AnyEvent::Helper> - Used by this module. There are some description for needs of _async methods.

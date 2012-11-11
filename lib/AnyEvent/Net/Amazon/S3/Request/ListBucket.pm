@@ -1,6 +1,7 @@
 package AnyEvent::Net::Amazon::S3::Request::ListBucket;
 
 # ABSTRACT: An internal class to list a bucket
+# VERSION
 
 use strict;
 use warnings;
@@ -11,6 +12,9 @@ use Module::AnyEvent::Helper::Filter -as => __PACKAGE__,
 
 1;
 __END__
+
+=for test_synopsis
+no strict 'vars';
 
 =head1 SYNOPSIS
 
@@ -24,7 +28,7 @@ __END__
 
 =head1 DESCRIPTION
 
-This module is just a dumb subclass of L<Net::Amazon::S3::Request::ListBucket>.
+This module is the same as L<Net::Amazon::S3::Request::ListBucket>, except for its name.
 
 =head1 METHODS
 
