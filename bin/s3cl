@@ -6,7 +6,7 @@ use Pod::Usage;
 use Path::Class;
 use File::Find::Rule;
 use Digest::MD5 qw(md5_hex);
-use Net::Amazon::S3;
+use AnyEvent::Net::Amazon::S3;
 use MIME::Types qw(by_suffix);
 use Term::ProgressBar::Simple;
 
@@ -88,7 +88,7 @@ sub init_s3 {
     my $aws_access_key_id     = $ENV{'AWS_ACCESS_KEY_ID'};
     my $aws_secret_access_key = $ENV{'AWS_ACCESS_KEY_SECRET'};
 
-    $s3 = Net::Amazon::S3->new(
+    $s3 = AnyEvent::Net::Amazon::S3->new(
         {   aws_access_key_id     => $aws_access_key_id,
             aws_secret_access_key => $aws_secret_access_key,
             retry                 => 1,
