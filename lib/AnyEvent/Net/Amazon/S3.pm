@@ -17,7 +17,7 @@ sub list_bucket_all_async {
     croak 'must specify bucket' unless $bucket;
 
     my $cv = AE::cv;
-    Module::AnyEvent::Helper::bind_scalar($self->list_bucket_async($conf), sub {
+    Module::AnyEvent::Helper::bind_scalar($cv, $self->list_bucket_async($conf), sub {
 
         my $response = shift->recv;
         return $response unless $response->{is_truncated};
@@ -28,7 +28,7 @@ sub list_bucket_all_async {
                 || $response->{keys}->[-1]->{key};
             $conf->{marker} = $next_marker;
             $conf->{bucket} = $bucket;
-            Module::AnyEvent::Helper::bind_scalar($self->list_bucket_async($conf), sub {
+            Module::AnyEvent::Helper::bind_scalar($cv, $self->list_bucket_async($conf), sub {
                 $response       = shift->recv;
                 push @{ $all->{keys} }, @{ $response->{keys} };
                 if($response->{is_truncated}) {
