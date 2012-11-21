@@ -12,6 +12,17 @@ use Module::AnyEvent::Helper::PPI::Transform qw(is_function_declaration copy_chi
 
 my $list_def = PPI::Document->new(\'sub list { return shift->list_async(@_); }');
 my $return_undef = PPI::Document->new(\'if($end) { $___cv___->send; return $___cv___; }');
+my $var_def = PPI::Document->new(\'my $marker = $conf->{marker};my $max_keys = $conf->{max_keys} || 1000;');
+my $req_def_ = <<'EOF';
+my $http_request = AnyEvent::Net::Amazon::S3::Request::ListBucket->new(
+                s3     => $self->client->s3,
+                bucket => $self->name,
+                marker => $marker,
+                prefix => $prefix,
+                max_keys => $max_keys,
+            )->http_request;
+EOF
+my $req_def = PPI::Document->new(do { chop($req_def_); \$req_def_ });
 
 sub document
 {
@@ -38,6 +49,23 @@ sub document
     });
     copy_children(undef, $target2->statement->snext_sibling, $return_undef);
     $target2->statement->delete;
+
+# Additional options
+    my $var = $doc->find_first(sub {
+        $_[1]->isa('PPI::Statement::Variable') &&
+            $_[1]->schild(0)->isa('PPI::Token::Word') && $_[1]->schild(0)->content eq 'my' &&
+            $_[1]->schild(1)->isa('PPI::Token::Symbol') && $_[1]->schild(1)->content eq '$marker';
+    });
+    copy_children(undef, $var->snext_sibling, $var_def);
+    $var->delete;
+    my $req = $sub_block->find_first(sub {
+        $_[1]->isa('PPI::Statement::Variable') &&
+            $_[1]->schild(0)->isa('PPI::Token::Word') && $_[1]->schild(0)->content eq 'my' &&
+            $_[1]->schild(1)->isa('PPI::Token::Symbol') && $_[1]->schild(1)->content eq '$http_request';
+    });
+    copy_children(undef, $req->snext_sibling, $req_def);
+    $req->delete;
+
 
 # Add list() definition
     copy_children($list_decl->statement, undef, $list_def);

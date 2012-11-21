@@ -81,7 +81,8 @@ Description for The followings are omitted.
 
 =item list
 
-Described in L<Net::Amazon::S3::Client::Bucket>.
+In addition to described in L<Net::Amazon::S3::Client::Bucket>,
+C<max_keys> and C<marker> options can be accepted.
 
 =item object
 
