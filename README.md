@@ -1,54 +1,150 @@
+# NAME
+
+AnyEvent::Net::Amazon::S3 - Use the Amazon S3 - Simple Storage Service
+
+# VERSION
+
+version v0.01.0.57
+
+# SYNOPSIS
+
+    # Can be used as same as Net::Amazon::S3
+    use AnyEvent::Net::Amazon::S3;
+    my $aws_access_key_id     = 'fill me in';
+    my $aws_secret_access_key = 'fill me in too';
+
+    my $s3 = AnyEvent::Net::Amazon::S3->new(
+        {   aws_access_key_id     => $aws_access_key_id,
+            aws_secret_access_key => $aws_secret_access_key,
+            retry                 => 1,
+        }
+    );
+
+    # a bucket is a globally-unique directory
+    # list all buckets that i own
+    my $response = $s3->buckets;
+    foreach my $bucket ( @{ $response->{buckets} } ) {
+        print "You have a bucket: " . $bucket->bucket . "\n";
+    }
+
+    # create a new bucket
+    my $bucketname = 'acmes_photo_backups';
+    my $bucket = $s3->add_bucket( { bucket => $bucketname } )
+        or die $s3->err . ": " . $s3->errstr;
+
+    # or use an existing bucket
+    $bucket = $s3->bucket($bucketname);
+
+    # store a file in the bucket
+    $bucket->add_key_filename( '1.JPG', 'DSC06256.JPG',
+        { content_type => 'image/jpeg', },
+    ) or die $s3->err . ": " . $s3->errstr;
+
+    # store a value in the bucket
+    $bucket->add_key( 'reminder.txt', 'this is where my photos are backed up' )
+        or die $s3->err . ": " . $s3->errstr;
+
+    # list files in the bucket
+    $response = $bucket->list_all
+        or die $s3->err . ": " . $s3->errstr;
+    foreach my $key ( @{ $response->{keys} } ) {
+        my $key_name = $key->{key};
+        my $key_size = $key->{size};
+        print "Bucket contains key '$key_name' of size $key_size\n";
+    }
+
+    # fetch file from the bucket
+    $response = $bucket->get_key_filename( '1.JPG', 'GET', 'backup.jpg' )
+        or die $s3->err . ": " . $s3->errstr;
+
+    # fetch value from the bucket
+    $response = $bucket->get_key('reminder.txt')
+        or die $s3->err . ": " . $s3->errstr;
+    print "reminder.txt:\n";
+    print "  content length: " . $response->{content_length} . "\n";
+    print "    content type: " . $response->{content_type} . "\n";
+    print "            etag: " . $response->{content_type} . "\n";
+    print "         content: " . $response->{value} . "\n";
+
+    # delete keys
+    $bucket->delete_key('reminder.txt') or die $s3->err . ": " . $s3->errstr;
+    $bucket->delete_key('1.JPG')        or die $s3->err . ": " . $s3->errstr;
+
+    # and finally delete the bucket
+    $bucket->delete_bucket or die $s3->err . ": " . $s3->errstr;
+
 # DESCRIPTION
 
-This module provides a Perlish interface to Amazon S3. From the
-developer blurb: "Amazon S3 is storage for the Internet. It is designed
-to make web-scale computing easier for developers. Amazon S3 provides a
-simple web services interface that can be used to store and retrieve any
-amount of data, at any time, from anywhere on the web. It gives any
-developer access to the same highly scalable, reliable, fast,
-inexpensive data storage infrastructure that Amazon uses to run its own
-global network of web sites. The service aims to maximize benefits of
-scale and to pass those benefits on to developers".
-
-To find out more about S3, please visit: http://s3.amazonaws.com/
-
-To use this module you will need to sign up to Amazon Web Services and
-provide an "Access Key ID" and " Secret Access Key". If you use this
-module, you will incurr costs as specified by Amazon. Please check the
-costs. If you use this module with your Access Key ID and Secret Access
-Key you must be responsible for these costs.
-
-I highly recommend reading all about S3, but in a nutshell data is
-stored in values. Values are referenced by keys, and keys are stored in
-buckets. Bucket names are global.
+This module provides the same interface as [Net::Amazon::S3](http://search.cpan.org/perldoc?Net::Amazon::S3).
+In addition, some asynchronous methods returning AnyEvent condition variable are added.
 
 Note: This is the legacy interface, please check out
-Net::Amazon::S3::Client instead.
+[AnyEvent::Net::Amazon::S3::Client](http://search.cpan.org/perldoc?AnyEvent::Net::Amazon::S3::Client) instead.
 
-Development of this code happens here:
-http://github.com/pfig/net-amazon-s3/
+# METHODS
 
-Homepage for the project (just started) is at
-http://pfig.github.com/net-amazon-s3/
+All [Net::Amazon::S3](http://search.cpan.org/perldoc?Net::Amazon::S3) methods are available.
+In addition, there are the following asynchronous methods.
+Arguments of the methods are identical as original but return value becomes [AnyEvent](http://search.cpan.org/perldoc?AnyEvent) condition variable.
+You can get actual return value by calling `shift->recv()`.
 
-# LICENSE
+- buckets\_async
+- add\_bucket\_async
+- delete\_bucket\_async
+- list\_bucket\_async
+- list\_bucket\_all\_async
+- add\_key\_async
+- get\_key\_async
+- head\_key\_async
+- delete\_key\_async
 
-This module contains code modified from Amazon that contains the
-following notice:
+This section is not outputted to actual POD document but for Pod::Coverage.
+Description for the followings are omitted.
 
-> This software code is made available "AS IS" without warranties of any
-> kind.  You may copy, display, modify and redistribute the software
-> code either by itself or as incorporated into your code; provided that
-> you do not remove any proprietary notices.  Your use of this software
-> code is at your own risk and you waive any claim against Amazon
-> Digital Services, Inc. or its affiliates with respect to your use of
-> this software code. (c) 2006 Amazon Digital Services, Inc. or its
-> affiliates.
+- BUILD
+
+    Moose private function
+
+- bucket
+
+    Described in [Net::Amazon::S3](http://search.cpan.org/perldoc?Net::Amazon::S3).
+
+# TESTING
+
+The following description is extracted from [Net::Amazon::S3](http://search.cpan.org/perldoc?Net::Amazon::S3).
+They are all applicable to this module.
+
+Testing S3 is a tricky thing. Amazon wants to charge you a bit of
+money each time you use their service. And yes, testing counts as using.
+Because of this, the application's test suite skips anything approaching
+a real test unless you set these three environment variables:
+
+- AMAZON\_S3\_EXPENSIVE\_TESTS
+
+    Doesn't matter what you set it to. Just has to be set
+
+- AWS\_ACCESS\_KEY\_ID
+
+    Your AWS access key
+
+- AWS\_ACCESS\_KEY\_SECRET
+
+    Your AWS sekkr1t passkey. Be forewarned that setting this environment variable
+    on a shared system might leak that information to another user. Be careful.
+
+# SEE ALSO
+
+- [AnyEvent::Net::Amazon::S3::Bucket](http://search.cpan.org/perldoc?AnyEvent::Net::Amazon::S3::Bucket)
+- [Net::Amazaon::S3](http://search.cpan.org/perldoc?Net::Amazaon::S3) - Based on it as original.
+- [Module::AnyEvent::Helper](http://search.cpan.org/perldoc?Module::AnyEvent::Helper) - Used by this module. There are some description for needs of \_async methods.
 
 # AUTHOR
 
-* Leon Brocard <acme@astray.com> and unknown Amazon Digital Services programmers.
+Yasutaka ATARASHI <yakex@cpan.org>
 
-* Brad Fitzpatrick <brad@danga.com> - return values, Bucket object.
+# COPYRIGHT AND LICENSE
 
-* Pedro Figueiredo <me@pedrofigueiredo.org> - since 0.54.
+This software is copyright (c) 2012 by Yasutaka ATARASHI.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
