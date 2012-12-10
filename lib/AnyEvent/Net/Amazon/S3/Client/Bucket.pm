@@ -73,22 +73,9 @@ You can get actual return value by calling C<shift-E<gt>recv()>.
 = location_constraint_async
 = delete_multi_object_async
 
-=begin comment
-
-This section is not outputted to actual POD document but for Pod::Coverage.
-Description for The followings are omitted.
-
-=over 4
-
-=item list
+=head2 list
 
 In addition to described in L<Net::Amazon::S3::Client::Bucket>,
 C<max_keys> and C<marker> options can be accepted.
-
-=item object
-
-Described in L<Net::Amazon::S3::Client::Bucket>.
-
-=back
-
-=end comment
+ 
+=for Pod::Coverage object

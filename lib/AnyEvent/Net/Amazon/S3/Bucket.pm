@@ -94,24 +94,12 @@ You can get actual return value by calling C<shift-E<gt>recv()>.
 = set_acl_async
 = get_location_constraint_async
 
-=begin comment
+=begin Pod::Coverage
 
-This section is not outputted to actual POD document but for Pod::Coverage.
-Description for The followings are omitted.
+err
+errstr
 
-=over 4
-
-=item err
-
-Described in L<Net::Amazon::S3::Bucket>.
-
-=item errstr
-
-Described in L<Net::Amazon::S3::Bucket>.
-
-=back
-
-=end comment
+=end Pod::Coverage
 
 =head1 SEE ALSO
 

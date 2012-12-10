@@ -4,7 +4,7 @@ AnyEvent::Net::Amazon::S3 - Use the Amazon S3 - Simple Storage Service
 
 # VERSION
 
-version v0.01.0.57
+version v0.01.0.58
 
 # SYNOPSIS
 
@@ -97,17 +97,6 @@ You can get actual return value by calling `shift->recv()`.
 - get\_key\_async
 - head\_key\_async
 - delete\_key\_async
-
-This section is not outputted to actual POD document but for Pod::Coverage.
-Description for the followings are omitted.
-
-- BUILD
-
-    Moose private function
-
-- bucket
-
-    Described in [Net::Amazon::S3](http://search.cpan.org/perldoc?Net::Amazon::S3).
 
 # TESTING
 

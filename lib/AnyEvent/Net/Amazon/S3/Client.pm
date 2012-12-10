@@ -67,20 +67,7 @@ You can get actual return value by calling C<shift-E<gt>recv()>.
 = buckets_async
 = create_bucket_async
 
-=begin comment
-
-This section is not outputted to actual POD document but for Pod::Coverage.
-Description for The followings are omitted.
-
-=over 4
-
-=item bucket
-
-Described in L<Net::Amazon::S3::Client>.
-
-=back
-
-=end comment
+=for Pod::Coverage bucket
 
 =head1 SEE ALSO
 

@@ -114,21 +114,10 @@ You can get actual return value by calling C<shift-E<gt>recv()>.
 = initiate_multipart_upload_async
 = put_part_async
 
-=begin comment
+=begin Pod::Coverage
 
-This section is not outputted to actual POD document but for Pod::Coverage.
-Description for The followings are omitted.
+list_parts
+query_string_authentication_uri
+uri
 
-=over 4
-
-=item query_string_authentication_uri
-
-Described in L<Net::Amazon::S3::Client::Bucket>.
-
-=item uri
-
-Described in L<Net::Amazon::S3::Client::Bucket>.
-
-=back
-
-=end comment
+=end Pod::Coverage

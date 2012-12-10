@@ -152,24 +152,12 @@ You can get actual return value by calling C<shift-E<gt>recv()>.
 = head_key_async
 = delete_key_async
 
-=begin :comment
+=begin Pod::Coverage
 
-This section is not outputted to actual POD document but for Pod::Coverage.
-Description for the followings are omitted.
+BUILD
+bucket
 
-=over 4
-
-=item  BUILD
-
-Moose private function
-
-=item bucket
-
-Described in L<Net::Amazon::S3>.
-
-=back
-
-=end :comment
+=end Pod::Coverage
 
 =head1 TESTING
 
