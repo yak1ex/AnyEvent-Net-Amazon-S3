@@ -258,7 +258,7 @@ for my $location ( undef ) {
 
     $response = $bucket_obj->get_key($keyname);
     is( $response->{content_type}, 'text/plain' );
-    like( $response->{value}, qr/AnyEvent-HTTP-Net-Amazon-S3/ );
+    like( $response->{value}, qr/AnyEvent-Net-Amazon-S3/ );
     is( $response->{etag},                $readme_md5 );
     is( $response->{'x-amz-meta-colour'}, 'orangy' );
     is( $response->{content_length},      $readme_size );
