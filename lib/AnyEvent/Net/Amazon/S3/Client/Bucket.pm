@@ -8,7 +8,7 @@ use warnings;
 
 use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon::S3::Client::Bucket',
         -transformer => 'Net::Amazon::S3::Client::Bucket',
-        -translate_func => [qw(_create delete acl location_constraint)],
+        -translate_func => [qw(_create delete acl location_constraint delete_multi_object)],
         -replace_func => [qw(_send_request _send_request_content _send_request_xpc)],
         -exclude_func => [qw(list)]
 ;
@@ -71,6 +71,7 @@ You can get actual return value by calling C<shift-E<gt>recv()>.
 = delete_async
 = list_async
 = location_constraint_async
+= delete_multi_object_async
 
 =begin comment
 

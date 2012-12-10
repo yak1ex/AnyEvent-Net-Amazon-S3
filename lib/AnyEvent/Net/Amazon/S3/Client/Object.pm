@@ -10,7 +10,8 @@ use warnings;
 # NOTE: exists and delete have HIGH risk.
 use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon::S3::Client::Object',
         -transformer => 'Net::Amazon::S3',
-        -translate_func => [qw(exists get get_filename put put_filename delete)],
+        -translate_func => [qw(exists get get_filename put put_filename delete
+                               initiate_multipart_upload complete_multipart_upload put_part)],
         -replace_func => [qw(_send_request_raw _send_request)]
 ;
 
@@ -109,6 +110,9 @@ You can get actual return value by calling C<shift-E<gt>recv()>.
 = get_filename_async
 = put_async
 = put_filename_async
+= complete_multipart_upload_async
+= initiate_multipart_upload_async
+= put_part_async
 
 =begin comment
 
