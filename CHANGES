@@ -1,6 +1,8 @@
 Revision history for Perl module AnyEvent::Net::Amazon::S3:
 
 {{$NEXT}}
+
+v0.01.0.58 Tue Dec 11 00:12:28 JST 2012
     - Adapt to Net::Amazon::S3 0.58.
 
 v0.01.0.57 Sat Dec 08 17:43:59 JST 2012
