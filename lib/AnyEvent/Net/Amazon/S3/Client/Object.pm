@@ -12,7 +12,7 @@ use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon
         -transformer => 'Net::Amazon::S3',
         -translate_func => [qw(exists get get_filename put put_filename delete
                                initiate_multipart_upload complete_multipart_upload put_part)],
-        -replace_func => [qw(_send_request_raw _send_request)]
+        -replace_func => [qw(_send_request_raw _send_request _send_request_xpc)]
 ;
 
 1;
