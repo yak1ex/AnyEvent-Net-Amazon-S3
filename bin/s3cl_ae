@@ -10,7 +10,7 @@ use AnyEvent::Net::Amazon::S3;
 use MIME::Types qw(by_suffix);
 use Term::ProgressBar::Simple;
 
-# PODNAME: s3cl
+# PODNAME: s3cl_ae
 # ABSTRACT: Command line for Amazon s3 cloud storage
 # VERSION
 
