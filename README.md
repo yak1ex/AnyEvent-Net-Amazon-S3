@@ -4,7 +4,7 @@ AnyEvent::Net::Amazon::S3 - Use the Amazon S3 - Simple Storage Service
 
 # VERSION
 
-version v0.01.0.58
+version v0.02.0.58
 
 # SYNOPSIS
 
