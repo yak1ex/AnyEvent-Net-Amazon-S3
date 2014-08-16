@@ -16,15 +16,15 @@ use Term::ProgressBar::Simple;
 
 =head1 SYNOPSIS
 
-s3cl command [options]
+s3cl_ae command [options]
 
-  s3cl buckets
-  s3cl mkbucket --bucket some_bucket_name --jurisdiction [EU|US]
-  s3cl ls <bucket>:[prefix]
-  s3cl cp <bucket>:<key> /path/[filename]
-  s3cl sync <bucket>:[prefix] /path/
-  s3cl sync_up [--acl_short=public-read] /path/ <bucket>:[prefix]
-  s3cl rm <bucket>:<key>
+  s3cl_ae buckets
+  s3cl_ae mkbucket --bucket some_bucket_name --jurisdiction [EU|US]
+  s3cl_ae ls <bucket>:[prefix]
+  s3cl_ae cp <bucket>:<key> /path/[filename]
+  s3cl_ae sync <bucket>:[prefix] /path/
+  s3cl_ae sync_up [--acl_short=public-read] <bucket>:[prefix] /path/
+  s3cl_ae rm <bucket>:<key>
 
  Options:
    -help            brief help message
@@ -344,20 +344,20 @@ __DATA__
 
 =item B<buckets>
 
-s3cl buckets
+s3cl_ae buckets
 
 List all buckets for this account.
 
 =item B<mkbucket>
 
-s3cl mkbucket --bucket sombucketname [--jurisdiction [EU|US]]
+s3cl_ae mkbucket --bucket sombucketname [--jurisdiction [EU|US]]
 
 Create a new bucket, optionally specifying what jurisdiction
 it should be created in.
 
 =item B<ls>
 
-s3cl ls <bucket>:[prefix]
+s3cl_ae ls <bucket>:[prefix]
 
 List contents of a bucket, the optional B<prefix> can be partial, in which
 case all keys matching this as the start of the key name will be returned.
@@ -365,16 +365,16 @@ If no B<prefix> is supplied all keys of the bucket will be returned.
 
 =item B<cp>
 
-s3cl cp <bucket>:<key> target_file
+s3cl_ae cp <bucket>:<key> target_file
 
-s3cl cp <bucket>:<key> target_directory
+s3cl_ae cp <bucket>:<key> target_directory
 
 Copy a single key from the bucket to the target file, or into
 the target_directory.
 
 =item B<sync>
 
-s3cl sync <bucket>:[prefix] target_dir
+s3cl_ae sync <bucket>:[prefix] target_dir
 
 Downloads all files matching the prefix into a directory structure
 replicating that of the prefix and all 'sub-directories'. It will
@@ -390,7 +390,7 @@ http://www.amazon.com/gp/browse.html?node=16427261
 
 =item B<sync_up>
 
-s3cl sync_up [--acl_short=public-read] /path/ <bucket>:[prefix]
+s3cl_ae sync_up [--acl_short=public-read] /path/ <bucket>:[prefix]
 
 Upload all the files below /path/ to S3, with an optional
 prefix at the start of the key name. The existing S3 files and
@@ -411,7 +411,7 @@ any change to a file then the entire file will be reuploaded.
 
 =item B<rm>
 
-s3cl rm <bucket>:<key>
+s3cl_ae rm <bucket>:<key>
 
 Remove a key(file) from the bucket, removing a non-existent file
 is not classed as an error. Once removed the key (file) can not

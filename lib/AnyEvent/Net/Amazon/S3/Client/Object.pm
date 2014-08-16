@@ -9,8 +9,8 @@ use warnings;
 # TODO: _content_sub might become more async manner?
 # NOTE: exists and delete have HIGH risk.
 use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon::S3::Client::Object',
-        -transformer => 'Net::Amazon::S3',
-        -translate_func => [qw(exists get get_filename put put_filename delete
+        -transformer => 'Net::Amazon::S3::Client::Object',
+        -translate_func => [qw(exists _get get get_decoded get_filename _put put put_filename delete
                                initiate_multipart_upload complete_multipart_upload put_part)],
         -replace_func => [qw(_send_request_raw _send_request _send_request_xpc)]
 ;
@@ -107,6 +107,7 @@ You can get actual return value by calling C<shift-E<gt>recv()>.
 = delete_async
 = exists_async
 = get_async
+= get_decoded_async
 = get_filename_async
 = put_async
 = put_filename_async
