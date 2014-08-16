@@ -4,7 +4,7 @@ AnyEvent::Net::Amazon::S3 - Use the Amazon S3 - Simple Storage Service
 
 # VERSION
 
-version v0.02.0.58
+version v0.03.0.60
 
 # SYNOPSIS
 
@@ -75,17 +75,17 @@ version v0.02.0.58
 
 # DESCRIPTION
 
-This module provides the same interface as [Net::Amazon::S3](http://search.cpan.org/perldoc?Net::Amazon::S3).
+This module provides the same interface as [Net::Amazon::S3](https://metacpan.org/pod/Net::Amazon::S3).
 In addition, some asynchronous methods returning AnyEvent condition variable are added.
 
 Note: This is the legacy interface, please check out
-[AnyEvent::Net::Amazon::S3::Client](http://search.cpan.org/perldoc?AnyEvent::Net::Amazon::S3::Client) instead.
+[AnyEvent::Net::Amazon::S3::Client](https://metacpan.org/pod/AnyEvent::Net::Amazon::S3::Client) instead.
 
 # METHODS
 
-All [Net::Amazon::S3](http://search.cpan.org/perldoc?Net::Amazon::S3) methods are available.
+All [Net::Amazon::S3](https://metacpan.org/pod/Net::Amazon::S3) methods are available.
 In addition, there are the following asynchronous methods.
-Arguments of the methods are identical as original but return value becomes [AnyEvent](http://search.cpan.org/perldoc?AnyEvent) condition variable.
+Arguments of the methods are identical as original but return value becomes [AnyEvent](https://metacpan.org/pod/AnyEvent) condition variable.
 You can get actual return value by calling `shift->recv()`.
 
 - buckets\_async
@@ -100,7 +100,7 @@ You can get actual return value by calling `shift->recv()`.
 
 # TESTING
 
-The following description is extracted from [Net::Amazon::S3](http://search.cpan.org/perldoc?Net::Amazon::S3).
+The following description is extracted from [Net::Amazon::S3](https://metacpan.org/pod/Net::Amazon::S3).
 They are all applicable to this module.
 
 Testing S3 is a tricky thing. Amazon wants to charge you a bit of
@@ -123,9 +123,9 @@ a real test unless you set these three environment variables:
 
 # SEE ALSO
 
-- [AnyEvent::Net::Amazon::S3::Bucket](http://search.cpan.org/perldoc?AnyEvent::Net::Amazon::S3::Bucket)
-- [Net::Amazaon::S3](http://search.cpan.org/perldoc?Net::Amazaon::S3) - Based on it as original.
-- [Module::AnyEvent::Helper](http://search.cpan.org/perldoc?Module::AnyEvent::Helper) - Used by this module. There are some description for needs of \_async methods.
+- [AnyEvent::Net::Amazon::S3::Bucket](https://metacpan.org/pod/AnyEvent::Net::Amazon::S3::Bucket)
+- [Net::Amazaon::S3](https://metacpan.org/pod/Net::Amazaon::S3) - Based on it as original.
+- [Module::AnyEvent::Helper](https://metacpan.org/pod/Module::AnyEvent::Helper) - Used by this module. There are some description for needs of \_async methods.
 
 # AUTHOR
 

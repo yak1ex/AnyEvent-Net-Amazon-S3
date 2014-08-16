@@ -2,6 +2,9 @@ Revision history for Perl module AnyEvent::Net::Amazon::S3:
 
 {{$NEXT}}
 
+v0.03.0.60 Sat Aug 16 13:49:59 JST 2014
+    - Sync with Net::Amazon::S3 0.60.
+
 v0.02.0.58 Wed Dec 19 23:40:13 JST 2012
     - Rename s3cl to avoid conflict with original module.
 
@@ -12,6 +15,15 @@ v0.01.0.57 Sat Dec 08 17:43:59 JST 2012
     - Initial release.
 
 Revision history for Perl module Net::Amazon::S3:
+
+0.60 Sun May 11 23:36:38 BST 2013
+    - Moose enum fixes (patch by Tom Hukins)
+    - Support for reduced redundancy (patch by Aaron Crane)
+    - README file name fix (patch by Jay Hannah)
+    - Fixed s3cl synopsis for sync_up (patch by perlpong)
+
+0.59 Sat Mar 17 09:36:38 GMT 2013
+    - Added support for security token authentication (patch by Miquel Ruiz)
 
 0.58 Wed Nov 28 16:22:42 GMT 2012
     - Added support for multi-part upload and multiple objects deletion (patch
