@@ -2,6 +2,9 @@ Revision history for Perl module AnyEvent::Net::Amazon::S3:
 
 {{$NEXT}}
 
+v0.04.0.80 Mon May 04 20:30:33 JST 2015
+    - Sync with Net::Amazon::S3 0.80.
+
 v0.03.0.60 Sat Aug 16 13:49:59 JST 2014
     - Sync with Net::Amazon::S3 0.60.
 
