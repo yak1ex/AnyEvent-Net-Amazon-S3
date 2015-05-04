@@ -6,9 +6,50 @@ package AnyEvent::Net::Amazon::S3::Client::Bucket;
 use strict;
 use warnings;
 
+use Module::AnyEvent::Helper;
+use AnyEvent;
+
+sub delete_multi_object_async
+{
+    my $self = shift;
+    my @objects = @_;
+    return unless( scalar(@objects) );
+
+    # Since delete can handle up to 1000 requests, be a little bit nicer
+    # and slice up requests and also allow keys to be strings
+    # rather than only objects.
+    my $cv = AE::cv;
+    my $iter; $iter = sub {
+
+        my $http_request = AnyEvent::Net::Amazon::S3::Request::DeleteMultiObject->new(
+            s3      => $self->client->s3,
+            bucket  => $self->name,
+            keys    => [map {
+                if (ref($_)) {
+                    $_->key
+                } else {
+                    $_
+                }
+            } splice @objects, 0, ((scalar(@objects) > 1000) ? 1000 : scalar(@objects))]
+        )->http_request;
+
+        Module::AnyEvent::Helper::bind_scalar($cv, $self->client->_send_request_async($http_request), sub {
+            my $last_result = shift->recv;
+            if(!$last_result->is_success() || scalar(@objects) == 0) {
+                return $last_result;
+            } else {
+                $iter->();
+            }
+        });
+    };
+    $iter->();
+    return $cv;
+}
+
 use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon::S3::Client::Bucket',
         -transformer => 'Net::Amazon::S3::Client::Bucket',
-        -translate_func => [qw(_create delete acl location_constraint delete_multi_object)],
+        -remove_func => [qw(delete_multi_object)],
+        -translate_func => [qw(_create delete acl location_constraint)],
         -replace_func => [qw(_send_request _send_request_content _send_request_xpc)],
         -exclude_func => [qw(list)]
 ;
@@ -78,4 +119,4 @@ You can get actual return value by calling C<shift-E<gt>recv()>.
 In addition to described in L<Net::Amazon::S3::Client::Bucket>,
 C<max_keys> and C<marker> options can be accepted.
  
-=for Pod::Coverage object
+=for Pod::Coverage object object_class

@@ -12,7 +12,7 @@ use File::Temp qw/ :seekable /;
 unless ( $ENV{'AMAZON_S3_EXPENSIVE_TESTS'} ) {
     plan skip_all => 'Testing this module for real costs money.';
 } else {
-    plan tests => 48;
+    plan tests => 54;
 }
 
 use_ok('AnyEvent::Net::Amazon::S3');
@@ -41,7 +41,7 @@ TODO: {
     is( scalar @buckets, 6, 'have a bunch of buckets' );
 }
 
-my $bucket_name = 'net-amazon-s3-test-' . lc $aws_access_key_id;
+my $bucket_name = 'net-amazon-s3-test-' . lc($aws_access_key_id) . '-'. time;
 
 my $bucket = $client->create_bucket(
     name                => $bucket_name,
@@ -207,12 +207,13 @@ is( length( get( $object->uri ) ),
     $readme_size, 'newly uploaded public object has the right size' );
 $object->delete;
 
-# upload a file with put_filename with known md5hex and size
+# upload a file with put_filename with known md5hex size and AES256 encryption
 
 $object = $bucket->object(
-    key  => 'the new readme',
-    etag => $readme_md5hex,
-    size => $readme_size
+    key        => 'the new readme',
+    etag       => $readme_md5hex,
+    size       => $readme_size,
+    encryption => 'AES256'
 );
 $object->put_filename('README');
 
@@ -255,6 +256,42 @@ is( length( get( $object->uri ) ),
     $readme_size, 'newly uploaded public object has the right size' );
 $object->delete;
 
+{
+  # upload an object using multipart upload and then abort it
+  $object = $bucket->object(
+    key       => 'new multipart file soon to be aborted',
+    acl_short => 'public-read'
+  );
+
+  my $upload_id;
+  ok(
+    $upload_id = $object->initiate_multipart_upload,
+    "can initiate a new multipart upload -- $upload_id"
+  );
+
+  #put part
+
+  my $put_part_response;
+  ok(
+    $put_part_response = $object->put_part(
+      part_number => 1,
+      upload_id   => $upload_id,
+      value       => 'x' x ( 5 * 1024 * 1024 )
+    ),
+    'Got a successful response for PUT part'
+  );
+  ok( $put_part_response->header('ETag'), 'etag ok' );
+
+  ok(
+    my $abort_response =
+      $object->abort_multipart_upload( upload_id => $upload_id ),
+    'Got a successful response for DELETE multipart upload'
+  );
+
+  ok( !$object->exists, "object has now been deleted" );
+
+}
+
 
 # upload an object using multipart upload
 $object = $bucket->object(
@@ -293,6 +330,10 @@ $tmp_fh->seek((5 * 1024 * 1024) - 1, SEEK_SET);#jump to 5MB position
 my $test_bytes;
 read($tmp_fh, $test_bytes, 2);
 is($test_bytes, "xz", "The second chunk of the file begins in the correct place");
+
+#test listing a multipart object
+$stream = $bucket->list({prefix => 'new multipart file'});
+lives_ok {my @items = $stream->items} 'Listing a multipart file does not throw an exeption';
 
 $object->delete;
 

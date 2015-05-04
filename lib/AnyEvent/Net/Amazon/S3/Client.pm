@@ -67,7 +67,7 @@ You can get actual return value by calling C<shift-E<gt>recv()>.
 = buckets_async
 = create_bucket_async
 
-=for Pod::Coverage bucket
+=for Pod::Coverage bucket bucket_class
 
 =head1 SEE ALSO
 

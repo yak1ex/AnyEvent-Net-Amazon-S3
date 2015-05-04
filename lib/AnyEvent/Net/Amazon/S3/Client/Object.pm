@@ -11,7 +11,7 @@ use warnings;
 use Module::AnyEvent::Helper::Filter -as => __PACKAGE__, -target => 'Net::Amazon::S3::Client::Object',
         -transformer => 'Net::Amazon::S3::Client::Object',
         -translate_func => [qw(exists _get get get_decoded get_filename _put put put_filename delete
-                               initiate_multipart_upload complete_multipart_upload put_part)],
+                               initiate_multipart_upload complete_multipart_upload abort_multipart_upload put_part)],
         -replace_func => [qw(_send_request_raw _send_request _send_request_xpc)]
 ;
 
@@ -61,6 +61,13 @@ no warnings;
 
   # return the URI of a publically-accessible object
   my $uri = $object->uri;
+
+  # to store a new object with server-side encryption enabled
+  my $object = $bucket->object(
+    key        => 'my secret',
+    encryption => 'AES256',
+  );
+  $object->put('this data will be stored using encryption.');
 
   # upload a file
   my $object = $bucket->object(
@@ -113,6 +120,7 @@ You can get actual return value by calling C<shift-E<gt>recv()>.
 = put_filename_async
 = complete_multipart_upload_async
 = initiate_multipart_upload_async
+= abort_multipart_upload_async
 = put_part_async
 
 =begin Pod::Coverage
@@ -120,5 +128,6 @@ You can get actual return value by calling C<shift-E<gt>recv()>.
 list_parts
 query_string_authentication_uri
 uri
+get_callback
 
 =end Pod::Coverage
